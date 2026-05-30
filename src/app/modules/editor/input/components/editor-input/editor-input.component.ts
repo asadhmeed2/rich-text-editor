@@ -1,13 +1,16 @@
-import { 
-  Component, 
-  ElementRef, 
-  ViewChild, 
-  input, 
-  output, 
-  effect, 
-  inject, 
-  OnInit 
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  input,
+  output,
+  effect,
+  inject,
+  OnInit,
+  viewChild,
+  forwardRef
 } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { EditorInputService } from './services/editor-input.service';
 
 @Component({
@@ -15,9 +18,16 @@ import { EditorInputService } from './services/editor-input.service';
   standalone: true,
   templateUrl: './editor-input.component.html',
   styleUrl: './editor-input.component.scss',
-  providers: [EditorInputService]
+  providers: [
+    EditorInputService,
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => EditorInputComponent),
+      multi: true
+    }
+  ]
 })
-export class EditorInputComponent implements OnInit {
+export class EditorInputComponent implements OnInit, ControlValueAccessor {
   protected readonly editorService = inject(EditorInputService);
 
   // Signal-based inputs
@@ -29,8 +39,11 @@ export class EditorInputComponent implements OnInit {
   contentChange = output<string>();
   focusChange = output<boolean>();
 
-  @ViewChild('editableArea', { static: true }) 
-  editableArea!: ElementRef<HTMLDivElement>;
+  editableArea = viewChild<HTMLDivElement>('editableArea');
+
+  // Form Control Value Accessor callbacks
+  private onChange: (value: string) => void = () => {};
+  private onTouched: () => void = () => {};
 
   constructor() {
     // Effect to sync signal inputs to the service's configuration
@@ -46,6 +59,19 @@ export class EditorInputComponent implements OnInit {
     effect(() => {
       const state = this.editorService.state();
       this.contentChange.emit(state.htmlContent);
+    });
+
+    // Reactive effect to synchronize the DOM with changes from outside (e.g. writeValue)
+    effect(() => {
+      const state = this.editorService.state();
+      const element = this.editableArea();
+      if (element) {
+        const nativeEl = element as any;
+        const domEl = nativeEl.nativeElement || nativeEl;
+        if (domEl.innerHTML !== state.htmlContent) {
+          domEl.innerHTML = state.htmlContent;
+        }
+      }
     });
   }
 
@@ -71,10 +97,12 @@ export class EditorInputComponent implements OnInit {
       const truncated = text.substring(0, max);
       target.innerText = truncated;
       this.editorService.updateContent(target.innerHTML, truncated);
+      this.onChange(target.innerHTML);
       return;
     }
 
     this.editorService.updateContent(html, text);
+    this.onChange(html);
   }
 
   // Handle focus
@@ -87,22 +115,55 @@ export class EditorInputComponent implements OnInit {
   onBlur(): void {
     this.editorService.setFocus(false);
     this.focusChange.emit(false);
+    this.onTouched();
+  }
+
+  // ControlValueAccessor implementation
+  writeValue(value: any): void {
+    const htmlValue = value || '';
+    this.editorService.updateContent(htmlValue, this.stripHtml(htmlValue));
+  }
+
+  registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: any): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.editorService.updateConfig({ readOnly: isDisabled });
   }
 
   // Helper method to set content programmatically
   setContent(html: string): void {
-    if (this.editableArea) {
-      this.editableArea.nativeElement.innerHTML = html;
-      const text = this.editableArea.nativeElement.innerText || '';
+    const element = this.editableArea();
+    if (element) {
+      const nativeEl = element as any;
+      const domEl = nativeEl.nativeElement || nativeEl;
+      domEl.innerHTML = html;
+      const text = domEl.innerText || '';
       this.editorService.updateContent(html, text);
+      this.onChange(html);
     }
   }
 
   // Helper method to clear the editor
   clearEditor(): void {
-    if (this.editableArea) {
-      this.editableArea.nativeElement.innerHTML = '';
+    const element = this.editableArea();
+    if (element) {
+      const nativeEl = element as any;
+      const domEl = nativeEl.nativeElement || nativeEl;
+      domEl.innerHTML = '';
+      this.onChange('');
     }
     this.editorService.clear();
+  }
+
+  private stripHtml(html: string): string {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.innerText || tempDiv.textContent || '';
   }
 }
