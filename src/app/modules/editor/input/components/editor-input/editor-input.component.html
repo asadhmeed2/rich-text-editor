@@ -1,0 +1,32 @@
+<div class="editor-container" 
+     [class.focused]="editorService.state().isFocused"
+     [class.limit-reached]="editorService.isLimitReached()"
+     [class.readonly]="editorService.config().readOnly">
+  
+  <div #editableArea
+       class="editor-textarea"
+       [attr.contenteditable]="!editorService.config().readOnly"
+       [attr.data-placeholder]="editorService.config().placeholder"
+       (input)="onInput($event)"
+       (focus)="onFocus()"
+       (blur)="onBlur()"></div>
+
+  <div class="editor-footer">
+    <div class="editor-status">
+      @if (editorService.config().readOnly) {
+        <span class="status-badge readonly-badge">Read Only</span>
+      } @else if (editorService.isLimitReached()) {
+        <span class="status-badge warning-badge">Character Limit Reached</span>
+      }
+    </div>
+
+    @if (editorService.config().maxLength !== undefined) {
+      <div class="character-count" [class.danger]="editorService.isLimitReached()">
+        {{ editorService.charCount() }} / {{ editorService.config().maxLength }}
+        @if (editorService.remainingChars() !== null) {
+          <span class="remaining-text">({{ editorService.remainingChars() }} left)</span>
+        }
+      </div>
+    }
+  </div>
+</div>
