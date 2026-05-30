@@ -16,4 +16,4 @@
 
 ## PR instructions
 - Title format: [<project_name>] <Title>
-- Always run `pnpm lint` and `pnpm test` before committing.
+- Always run `npm lint` and `npm test` before committing.
