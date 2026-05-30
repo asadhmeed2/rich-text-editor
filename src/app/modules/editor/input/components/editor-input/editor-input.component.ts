@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { EditorInputService } from './services/editor-input.service';
+import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.types';
 
 @Component({
   selector: 'app-editor-input',
@@ -34,15 +35,16 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
   placeholder = input<string>('Type your content here...');
   maxLength = input<number>(1000);
   readOnly = input<boolean>(false);
+  outputFormat = input<EditorOutputFormat>('html');
 
   // Signal-based outputs
-  contentChange = output<string>();
+  contentChange = output<string | EditorObjectOutput>();
   focusChange = output<boolean>();
 
   editableArea = viewChild<HTMLDivElement>('editableArea');
 
   // Form Control Value Accessor callbacks
-  private onChange: (value: string) => void = () => {};
+  private onChange: (value: string | EditorObjectOutput) => void = () => {};
   private onTouched: () => void = () => {};
 
   constructor() {
@@ -51,14 +53,15 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
       this.editorService.updateConfig({
         placeholder: this.placeholder(),
         maxLength: this.maxLength(),
-        readOnly: this.readOnly()
+        readOnly: this.readOnly(),
+        outputFormat: this.outputFormat()
       });
     });
 
     // Effect to emit contentChange when service state updates
     effect(() => {
-      const state = this.editorService.state();
-      this.contentChange.emit(state.htmlContent);
+      const value = this.editorService.outputValue();
+      this.contentChange.emit(value);
     });
 
     // Reactive effect to synchronize the DOM with changes from outside (e.g. writeValue)
@@ -68,8 +71,15 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
       if (element) {
         const nativeEl = element as any;
         const domEl = nativeEl.nativeElement || nativeEl;
-        if (domEl.innerHTML !== state.htmlContent) {
-          domEl.innerHTML = state.htmlContent;
+        
+        if (this.outputFormat() === 'text') {
+          if (domEl.innerText !== state.textContent) {
+            domEl.innerText = state.textContent;
+          }
+        } else {
+          if (domEl.innerHTML !== state.htmlContent) {
+            domEl.innerHTML = state.htmlContent;
+          }
         }
       }
     });
@@ -79,7 +89,8 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
     this.editorService.updateConfig({
       placeholder: this.placeholder(),
       maxLength: this.maxLength(),
-      readOnly: this.readOnly()
+      readOnly: this.readOnly(),
+      outputFormat: this.outputFormat()
     });
   }
 
@@ -97,12 +108,12 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
       const truncated = text.substring(0, max);
       target.innerText = truncated;
       this.editorService.updateContent(target.innerHTML, truncated);
-      this.onChange(target.innerHTML);
+      this.onChange(this.editorService.outputValue());
       return;
     }
 
     this.editorService.updateContent(html, text);
-    this.onChange(html);
+    this.onChange(this.editorService.outputValue());
   }
 
   // Handle focus
@@ -120,8 +131,21 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
 
   // ControlValueAccessor implementation
   writeValue(value: any): void {
-    const htmlValue = value || '';
-    this.editorService.updateContent(htmlValue, this.stripHtml(htmlValue));
+    if (!value) {
+      this.editorService.updateContent('', '');
+      return;
+    }
+
+    if (typeof value === 'object' && value.html && typeof value.html.content === 'string') {
+      const htmlContent = value.html.content;
+      this.editorService.updateContent(htmlContent, this.stripHtml(htmlContent));
+    } else if (typeof value === 'string') {
+      if (this.outputFormat() === 'text') {
+        this.editorService.updateContent(value, value);
+      } else {
+        this.editorService.updateContent(value, this.stripHtml(value));
+      }
+    }
   }
 
   registerOnChange(fn: any): void {
@@ -142,10 +166,15 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
     if (element) {
       const nativeEl = element as any;
       const domEl = nativeEl.nativeElement || nativeEl;
-      domEl.innerHTML = html;
-      const text = domEl.innerText || '';
-      this.editorService.updateContent(html, text);
-      this.onChange(html);
+      if (this.outputFormat() === 'text') {
+        domEl.innerText = html;
+        this.editorService.updateContent(html, html);
+      } else {
+        domEl.innerHTML = html;
+        const text = domEl.innerText || '';
+        this.editorService.updateContent(html, text);
+      }
+      this.onChange(this.editorService.outputValue());
     }
   }
 
@@ -155,7 +184,11 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
     if (element) {
       const nativeEl = element as any;
       const domEl = nativeEl.nativeElement || nativeEl;
-      domEl.innerHTML = '';
+      if (this.outputFormat() === 'text') {
+        domEl.innerText = '';
+      } else {
+        domEl.innerHTML = '';
+      }
       this.onChange('');
     }
     this.editorService.clear();

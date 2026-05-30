@@ -176,7 +176,11 @@
 </style>
 
 <main class="main">
-  <app-editor-input />
+  <form [formGroup]="form()">
+    <app-editor-input formControlName="content" [outputFormat]="'object'" />
+  </form>
+
+  <pre>{{ form().value | json }}</pre>
 </main>
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
