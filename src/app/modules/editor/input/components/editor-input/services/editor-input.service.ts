@@ -50,20 +50,24 @@ export class EditorInputService {
 
     while (i < html.length) {
       if (html[i] === '<') {
-        const startHtmlPos = i;
-        let tagContent = "";
-        i++; // skip '<'
-        while (i < html.length && html[i] !== '>') {
-          tagContent += html[i];
+        const closeIdx = html.indexOf('>', i);
+        const isTag = closeIdx !== -1 && 
+                      !html.substring(i + 1, closeIdx).includes('<') &&
+                      /^(?:[a-zA-Z!]|\/[a-zA-Z])/.test(html.substring(i + 1, closeIdx + 1));
+
+        if (isTag) {
+          const startHtmlPos = i;
+          const tagContent = html.substring(i + 1, closeIdx);
+          tags.push({
+            tag: tagContent,
+            htmlPosition: startHtmlPos,
+            textPosition: plainText.length
+          });
+          i = closeIdx + 1; // Advance past '>'
+        } else {
+          plainText += '<';
           i++;
         }
-        // i is at '>' (or end of string)
-        tags.push({
-          tag: tagContent,
-          htmlPosition: startHtmlPos,
-          textPosition: plainText.length
-        });
-        i++; // skip '>'
       } else if (html[i] === '&') {
         let entity = "&";
         let j = i + 1;
