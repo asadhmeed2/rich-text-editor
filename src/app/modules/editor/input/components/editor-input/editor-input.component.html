@@ -3,6 +3,77 @@
      [class.limit-reached]="editorService.isLimitReached()"
      [class.readonly]="editorService.config().readOnly">
   
+  @if (!editorService.config().readOnly) {
+    <div class="editor-toolbar">
+      <!-- Bold -->
+      <button class="toolbar-btn" 
+              title="Bold" 
+              (mousedown)="$event.preventDefault(); formatDoc('bold')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5Zm0 7h5.5a2.5 2.5 0 1 0 0-5H8v5ZM6 4h6.5a4.5 4.5 0 0 1 0 9H6V4Zm0 9h7.5a4.5 4.5 0 0 1 0 9H6v-9Z" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <!-- Italic -->
+      <button class="toolbar-btn" 
+              title="Italic" 
+              (mousedown)="$event.preventDefault(); formatDoc('italic')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M10 5h8v2h-3l-3.99 10H14v2H6v-2h3l3.99-10H10V5Z" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <!-- Underline -->
+      <button class="toolbar-btn" 
+              title="Underline" 
+              (mousedown)="$event.preventDefault(); formatDoc('underline')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M8 3v9a4 4 0 1 0 8 0V3h2v9a6 6 0 1 1-12 0V3h2ZM4 20h16v2H4v-2Z" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <!-- Strikethrough -->
+      <button class="toolbar-btn" 
+              title="Strikethrough" 
+              (mousedown)="$event.preventDefault(); formatDoc('strikeThrough')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M10 19h4v-3h-4v3ZM5 4h14v3h-5v3h-4V7H5V4Zm-1 7h16v2H4v-2Z" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- Unordered List -->
+      <button class="toolbar-btn" 
+              title="Bullet List" 
+              (mousedown)="$event.preventDefault(); formatDoc('insertUnorderedList')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M4 10.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0-12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <!-- Ordered List -->
+      <button class="toolbar-btn" 
+              title="Numbered List" 
+              (mousedown)="$event.preventDefault(); formatDoc('insertOrderedList')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M2 3.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- Clear Formatting -->
+      <button class="toolbar-btn" 
+              title="Clear Formatting" 
+              (mousedown)="$event.preventDefault(); formatDoc('removeFormat')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M14.12 10.47 12 12.59l-2.12-2.12-1.41 1.41L10.59 14l-2.12 2.12 1.41 1.41L12 15.41l2.12 2.12 1.41-1.41L13.41 14l2.12-2.12-1.41-1.41ZM5 4h14v3h-5v3h-4V7H5V4Zm0 13h14v2H5v-2Z" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  }
+  
   <div #editableArea
        class="editor-textarea"
        [attr.contenteditable]="!editorService.config().readOnly"

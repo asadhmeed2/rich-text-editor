@@ -210,6 +210,26 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
     this.editorService.updateConfig({ readOnly: isDisabled });
   }
 
+  // Execute standard formatting commands on document selection
+  formatDoc(command: string, value: string = ''): void {
+    if (this.readOnly()) return;
+
+    document.execCommand(command, false, value);
+
+    // Keep state and listeners in sync
+    const element = this.editableArea();
+    if (element) {
+      const nativeEl = element as any;
+      const domEl = nativeEl.nativeElement || nativeEl;
+      
+      const html = domEl.innerHTML;
+      const text = domEl.innerText || domEl.textContent || '';
+      
+      this.editorService.updateContent(html, text);
+      this.onChange(this.editorService.outputValue());
+    }
+  }
+
   // Helper method to set content programmatically
   setContent(html: string): void {
     const element = this.editableArea();

@@ -55,6 +55,48 @@ $readonly-bg: hsl(210, 14%, 96%);
   }
 }
 
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 16px;
+  background-color: lighten($bg-color, 0.5%);
+  border-bottom: 1px solid $border-color;
+  user-select: none;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: hsl(210, 24%, 30%);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background-color: rgba($primary-color, 0.08);
+    color: $primary-color;
+  }
+
+  &:active {
+    transform: scale(0.95);
+    background-color: rgba($primary-color, 0.15);
+  }
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background-color: $border-color;
+  margin: 0 6px;
+}
+
 .editor-textarea {
   min-height: 150px;
   max-height: 400px;
