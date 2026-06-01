@@ -1,18 +1,26 @@
 import {
   Component,
   ElementRef,
-  ViewChild,
   input,
   output,
+  viewChild,
   effect,
   inject,
   OnInit,
-  viewChild,
+  AfterViewInit,
   forwardRef
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { EditorInputService } from './services/editor-input.service';
 import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.types';
+import Quill from 'quill';
+
+// Override default block format to 'div' instead of 'p' to align perfectly with service expectations and tests
+const Block = Quill.import('blots/block') as any;
+class DivBlock extends Block {
+  static tagName = 'div';
+}
+Quill.register(DivBlock, true);
 
 @Component({
   selector: 'app-editor-input',
@@ -28,7 +36,7 @@ import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.typ
     }
   ]
 })
-export class EditorInputComponent implements OnInit, ControlValueAccessor {
+export class EditorInputComponent implements OnInit, AfterViewInit, ControlValueAccessor {
   protected readonly editorService = inject(EditorInputService);
 
   // Signal-based inputs
@@ -41,7 +49,10 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
   contentChange = output<string | EditorObjectOutput>();
   focusChange = output<boolean>();
 
-  editableArea = viewChild<HTMLDivElement>('editableArea');
+  editableArea = viewChild<ElementRef<HTMLDivElement>>('editableArea');
+
+  private quill?: Quill;
+  private pendingValue: any = null;
 
   // Form Control Value Accessor callbacks
   private onChange: (value: string | EditorObjectOutput) => void = () => {};
@@ -50,38 +61,30 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
   constructor() {
     // Effect to sync signal inputs to the service's configuration
     effect(() => {
+      const isReadOnly = this.readOnly();
+      const ph = this.placeholder();
+
       this.editorService.updateConfig({
-        placeholder: this.placeholder(),
+        placeholder: ph,
         maxLength: this.maxLength(),
-        readOnly: this.readOnly(),
+        readOnly: isReadOnly,
         outputFormat: this.outputFormat()
       });
+
+      if (this.quill) {
+        if (isReadOnly) {
+          this.quill.disable();
+        } else {
+          this.quill.enable();
+        }
+        this.quill.root.dataset['placeholder'] = ph || '';
+      }
     });
 
     // Effect to emit contentChange when service state updates
     effect(() => {
       const value = this.editorService.outputValue();
       this.contentChange.emit(value);
-    });
-
-    // Reactive effect to synchronize the DOM with changes from outside (e.g. writeValue)
-    effect(() => {
-      const state = this.editorService.state();
-      const element = this.editableArea();
-      if (element) {
-        const nativeEl = element as any;
-        const domEl = nativeEl.nativeElement || nativeEl;
-        
-        if (this.outputFormat() === 'text') {
-          if (domEl.innerText !== state.textContent) {
-            domEl.innerText = state.textContent;
-          }
-        } else {
-          if (domEl.innerHTML !== state.htmlContent) {
-            domEl.innerHTML = state.htmlContent;
-          }
-        }
-      }
     });
   }
 
@@ -94,74 +97,48 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
     });
   }
 
-  // Handle input events in contenteditable
-  onInput(event: Event): void {
-    if (this.readOnly()) return;
+  ngAfterViewInit(): void {
+    const elementRef = this.editableArea();
+    if (elementRef) {
+      const domEl = elementRef.nativeElement || (elementRef as any);
 
-    const target = event.target as HTMLDivElement;
-    
-    // Auto-wrap root-level inline elements inside a <div> when a new line block is created
-    this.ensureFirstLineWrapped(target);
-
-    const html = target.innerHTML;
-    const text = target.innerText || target.textContent || '';
-
-    // Enforce max length restriction
-    const max = this.maxLength();
-    if (max !== undefined && text.length > max) {
-      const truncated = text.substring(0, max);
-      target.innerText = truncated;
-      this.editorService.updateContent(target.innerHTML, truncated);
-      this.onChange(this.editorService.outputValue());
-      return;
-    }
-
-    this.editorService.updateContent(html, text);
-    this.onChange(this.editorService.outputValue());
-  }
-
-  private ensureFirstLineWrapped(target: HTMLDivElement): void {
-    const childNodes = Array.from(target.childNodes);
-    const firstBlockIdx = childNodes.findIndex(node => 
-      node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'DIV'
-    );
-
-    // If there is a block-level DIV and we have root-level inline nodes preceding it
-    if (firstBlockIdx > 0) {
-      const inlineNodes = childNodes.slice(0, firstBlockIdx);
-
-      // Check if there is actual content to wrap
-      const hasContent = inlineNodes.some(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          return node.textContent && node.textContent.trim().length > 0;
-        }
-        return true; // elements like <b>, <i>, <span>, etc.
+      this.quill = new Quill(domEl, {
+        modules: {
+          toolbar: false // Disable Quill's built-in toolbar as we have a premium custom toolbar
+        },
+        placeholder: this.placeholder(),
+        readOnly: this.readOnly()
       });
 
-      if (hasContent) {
-        // Save user selection/caret position
-        const selection = window.getSelection();
-        let savedRange: Range | null = null;
-        if (selection && selection.rangeCount > 0) {
-          savedRange = selection.getRangeAt(0).cloneRange();
+      // Handle text-change events
+      this.quill.on('text-change', () => {
+        const text = this.quill!.getText().replace(/\n$/, '');
+        const html = this.quill!.root.innerHTML;
+
+        // Enforce max length restriction
+        const max = this.maxLength();
+        if (max !== undefined && text.length > max) {
+          this.quill!.deleteText(max, text.length - max);
+          return;
         }
 
-        // Create the wrapping div
-        const wrappingDiv = document.createElement('div');
-        
-        // Insert wrapping div before the first inline node
-        target.insertBefore(wrappingDiv, inlineNodes[0]);
+        this.editorService.updateContent(html, text);
+        this.onChange(this.editorService.outputValue());
+      });
 
-        // Append all preceding inline nodes to the wrapping div
-        inlineNodes.forEach(node => {
-          wrappingDiv.appendChild(node);
-        });
-
-        // Restore user selection/caret position to prevent jumping
-        if (savedRange && selection) {
-          selection.removeAllRanges();
-          selection.addRange(savedRange);
+      // Handle focus and blur via selection-change
+      this.quill.on('selection-change', (range, oldRange) => {
+        if (range === null) {
+          this.onBlur();
+        } else if (oldRange === null) {
+          this.onFocus();
         }
+      });
+
+      // Apply any pending value set before Quill was initialized
+      if (this.pendingValue !== null) {
+        this.applyValue(this.pendingValue);
+        this.pendingValue = null;
       }
     }
   }
@@ -181,20 +158,36 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
 
   // ControlValueAccessor implementation
   writeValue(value: any): void {
+    if (!this.quill) {
+      this.pendingValue = value;
+      return;
+    }
+
+    this.applyValue(value);
+  }
+
+  private applyValue(value: any): void {
     if (!value) {
+      this.quill!.setText('');
       this.editorService.updateContent('', '');
       return;
     }
 
+    let htmlContent = '';
     if (typeof value === 'object' && value.html && typeof value.html.content === 'string') {
-      const htmlContent = value.html.content;
-      this.editorService.updateContent(htmlContent, this.stripHtml(htmlContent));
+      htmlContent = value.html.content;
     } else if (typeof value === 'string') {
-      if (this.outputFormat() === 'text') {
-        this.editorService.updateContent(value, value);
-      } else {
-        this.editorService.updateContent(value, this.stripHtml(value));
-      }
+      htmlContent = value;
+    }
+
+    if (this.outputFormat() === 'text') {
+      this.quill!.setText(htmlContent);
+      this.editorService.updateContent(htmlContent, htmlContent);
+    } else {
+      this.quill!.root.innerHTML = htmlContent;
+      const text = this.quill!.getText().replace(/\n$/, '');
+      const normalizedHtml = this.quill!.root.innerHTML;
+      this.editorService.updateContent(normalizedHtml, text);
     }
   }
 
@@ -208,65 +201,87 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
 
   setDisabledState(isDisabled: boolean): void {
     this.editorService.updateConfig({ readOnly: isDisabled });
+    if (this.quill) {
+      if (isDisabled) {
+        this.quill.disable();
+      } else {
+        this.quill.enable();
+      }
+    }
   }
 
   // Execute standard formatting commands on document selection
   formatDoc(command: string, value: string = ''): void {
-    if (this.readOnly()) return;
+    if (this.readOnly() || !this.quill) return;
 
-    document.execCommand(command, false, value);
+    // Focus editor first so the format applies to selection/caret
+    this.quill.focus();
 
-    // Keep state and listeners in sync
-    const element = this.editableArea();
-    if (element) {
-      const nativeEl = element as any;
-      const domEl = nativeEl.nativeElement || nativeEl;
-      
-      const html = domEl.innerHTML;
-      const text = domEl.innerText || domEl.textContent || '';
-      
-      this.editorService.updateContent(html, text);
-      this.onChange(this.editorService.outputValue());
+    const currentFormat = this.quill.getFormat();
+
+    switch (command) {
+      case 'bold':
+        this.quill.format('bold', !currentFormat['bold']);
+        break;
+      case 'italic':
+        this.quill.format('italic', !currentFormat['italic']);
+        break;
+      case 'underline':
+        this.quill.format('underline', !currentFormat['underline']);
+        break;
+      case 'strikeThrough':
+        this.quill.format('strike', !currentFormat['strike']);
+        break;
+      case 'insertUnorderedList':
+        if (currentFormat['list'] === 'bullet') {
+          this.quill.format('list', false);
+        } else {
+          this.quill.format('list', 'bullet');
+        }
+        break;
+      case 'insertOrderedList':
+        if (currentFormat['list'] === 'ordered') {
+          this.quill.format('list', false);
+        } else {
+          this.quill.format('list', 'ordered');
+        }
+        break;
+      case 'removeFormat':
+        const range = this.quill.getSelection();
+        if (range) {
+          this.quill.removeFormat(range.index, range.length);
+        }
+        break;
+      default:
+        break;
     }
   }
 
   // Helper method to set content programmatically
   setContent(html: string): void {
-    const element = this.editableArea();
-    if (element) {
-      const nativeEl = element as any;
-      const domEl = nativeEl.nativeElement || nativeEl;
-      if (this.outputFormat() === 'text') {
-        domEl.innerText = html;
-        this.editorService.updateContent(html, html);
-      } else {
-        domEl.innerHTML = html;
-        const text = domEl.innerText || '';
-        this.editorService.updateContent(html, text);
-      }
-      this.onChange(this.editorService.outputValue());
+    if (!this.quill) {
+      this.pendingValue = html;
+      return;
     }
+
+    if (this.outputFormat() === 'text') {
+      this.quill.setText(html);
+      this.editorService.updateContent(html, html);
+    } else {
+      this.quill.root.innerHTML = html;
+      const text = this.quill.getText().replace(/\n$/, '');
+      const normalizedHtml = this.quill.root.innerHTML;
+      this.editorService.updateContent(normalizedHtml, text);
+    }
+    this.onChange(this.editorService.outputValue());
   }
 
   // Helper method to clear the editor
   clearEditor(): void {
-    const element = this.editableArea();
-    if (element) {
-      const nativeEl = element as any;
-      const domEl = nativeEl.nativeElement || nativeEl;
-      if (this.outputFormat() === 'text') {
-        domEl.innerText = '';
-      } else {
-        domEl.innerHTML = '';
-      }
-      this.onChange('');
+    if (this.quill) {
+      this.quill.setText('');
     }
     this.editorService.clear();
-  }
-
-  private stripHtml(html: string): string {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    return tempDiv.innerText || tempDiv.textContent || '';
+    this.onChange(this.editorService.outputValue());
   }
 }

@@ -75,12 +75,7 @@
   }
   
   <div #editableArea
-       class="editor-textarea"
-       [attr.contenteditable]="!editorService.config().readOnly"
-       [attr.data-placeholder]="editorService.config().placeholder"
-       (input)="onInput($event)"
-       (focus)="onFocus()"
-       (blur)="onBlur()"></div>
+       class="editor-textarea"></div>
 
   <div class="editor-footer">
     <div class="editor-status">

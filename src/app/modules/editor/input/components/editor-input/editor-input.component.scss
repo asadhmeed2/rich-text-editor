@@ -1,3 +1,4 @@
+
 // Premium Color Palette using HSL
 $primary-color: hsl(220, 90%, 56%);
 $primary-hover: hsl(220, 90%, 50%);
@@ -48,7 +49,7 @@ $readonly-bg: hsl(210, 14%, 96%);
     cursor: not-allowed;
     box-shadow: none;
 
-    .editor-textarea {
+    ::ng-deep .ql-editor {
       cursor: not-allowed;
       color: $text-muted;
     }
@@ -98,39 +99,49 @@ $readonly-bg: hsl(210, 14%, 96%);
 }
 
 .editor-textarea {
-  min-height: 150px;
-  max-height: 400px;
-  padding: 16px;
-  overflow-y: auto;
+  border: none;
+  font-family: inherit;
   font-size: 15px;
-  line-height: 1.6;
   color: $text-color;
-  outline: none;
-  word-break: break-word;
 
-  // Custom scrollbar
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: darken($border-color, 10%);
-    border-radius: 4px;
-  }
+  ::ng-deep {
+    .ql-editor {
+      min-height: 150px;
+      max-height: 400px;
+      padding: 16px;
+      overflow-y: auto;
+      line-height: 1.6;
+      outline: none;
+      word-break: break-word;
 
-  // Placeholder styling
-  &:empty::before {
-    content: attr(data-placeholder);
-    color: $text-muted;
-    pointer-events: none;
-    display: block;
-    transition: opacity 0.2s ease;
-  }
+      // Custom scrollbar
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: darken($border-color, 10%);
+        border-radius: 4px;
+      }
 
-  &:focus:empty::before {
-    opacity: 0.5;
+      // Quill placeholder styling override
+      &.ql-blank::before {
+        content: attr(data-placeholder);
+        color: $text-muted;
+        font-style: normal;
+        left: 16px;
+        right: 16px;
+        opacity: 1;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      
+      &:focus.ql-blank::before {
+        opacity: 0.5;
+      }
+    }
   }
 }
 
