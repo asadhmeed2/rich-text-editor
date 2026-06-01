@@ -66,7 +66,7 @@ export class EditorInputService {
 
           // Treat <br> tags as a space in plain text
           const lowercaseTag = tagContent.trim().toLowerCase();
-          const isDiv = lowercaseTag === 'div' || lowercaseTag.startsWith('div/') || lowercaseTag.startsWith('div');
+          const isDiv = lowercaseTag === 'div' || lowercaseTag.startsWith('div');
 
           if (isDiv) {
             plainText += ' ';
