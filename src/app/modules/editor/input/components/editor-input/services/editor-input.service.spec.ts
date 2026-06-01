@@ -128,6 +128,22 @@ describe('EditorInputService', () => {
       const result4 = service.parseHtml('<123>test</123>');
       expect(result4.plainText).toBe('<123>test</123>');
       expect(result4.html.tags).toEqual([]);
+
+      const result5 = service.parseHtml('asad<div><br></div>hmeed');
+      expect(result5.plainText).toBe('asad hmeed');
+      expect(result5.html.tags).toEqual([{
+        tag: 'div',
+        htmlPosition: 4,
+        textPosition: 4
+      }, {
+        tag: 'br',
+        htmlPosition: 9,
+        textPosition: 4
+      }, {
+        tag: '/div',
+        htmlPosition: 13,
+        textPosition: 5
+      }]);
     });
   });
 });

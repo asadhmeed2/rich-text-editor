@@ -63,6 +63,14 @@ export class EditorInputService {
             htmlPosition: startHtmlPos,
             textPosition: plainText.length
           });
+
+          // Treat <br> tags as a space in plain text
+          const lowercaseTag = tagContent.trim().toLowerCase();
+          const isBr = lowercaseTag === 'br' || lowercaseTag === 'br/' || lowercaseTag.startsWith('br ') || lowercaseTag.startsWith('br/');
+          if (isBr) {
+            plainText += ' ';
+          }
+
           i = closeIdx + 1; // Advance past '>'
         } else {
           plainText += '<';
