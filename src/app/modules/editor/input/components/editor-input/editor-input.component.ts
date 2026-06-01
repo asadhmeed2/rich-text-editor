@@ -99,6 +99,10 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
     if (this.readOnly()) return;
 
     const target = event.target as HTMLDivElement;
+    
+    // Auto-wrap root-level inline elements inside a <div> when a new line block is created
+    this.ensureFirstLineWrapped(target);
+
     const html = target.innerHTML;
     const text = target.innerText || target.textContent || '';
 
@@ -114,6 +118,52 @@ export class EditorInputComponent implements OnInit, ControlValueAccessor {
 
     this.editorService.updateContent(html, text);
     this.onChange(this.editorService.outputValue());
+  }
+
+  private ensureFirstLineWrapped(target: HTMLDivElement): void {
+    const childNodes = Array.from(target.childNodes);
+    const firstBlockIdx = childNodes.findIndex(node => 
+      node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'DIV'
+    );
+
+    // If there is a block-level DIV and we have root-level inline nodes preceding it
+    if (firstBlockIdx > 0) {
+      const inlineNodes = childNodes.slice(0, firstBlockIdx);
+
+      // Check if there is actual content to wrap
+      const hasContent = inlineNodes.some(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return node.textContent && node.textContent.trim().length > 0;
+        }
+        return true; // elements like <b>, <i>, <span>, etc.
+      });
+
+      if (hasContent) {
+        // Save user selection/caret position
+        const selection = window.getSelection();
+        let savedRange: Range | null = null;
+        if (selection && selection.rangeCount > 0) {
+          savedRange = selection.getRangeAt(0).cloneRange();
+        }
+
+        // Create the wrapping div
+        const wrappingDiv = document.createElement('div');
+        
+        // Insert wrapping div before the first inline node
+        target.insertBefore(wrappingDiv, inlineNodes[0]);
+
+        // Append all preceding inline nodes to the wrapping div
+        inlineNodes.forEach(node => {
+          wrappingDiv.appendChild(node);
+        });
+
+        // Restore user selection/caret position to prevent jumping
+        if (savedRange && selection) {
+          selection.removeAllRanges();
+          selection.addRange(savedRange);
+        }
+      }
+    }
   }
 
   // Handle focus

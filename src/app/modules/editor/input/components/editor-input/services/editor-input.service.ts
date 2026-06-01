@@ -1,9 +1,9 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { 
-  EditorInputConfig, 
-  EditorState, 
-  HtmlTagInfo, 
-  EditorObjectOutput 
+import {
+  EditorInputConfig,
+  EditorState,
+  HtmlTagInfo,
+  EditorObjectOutput
 } from '../types/editor-input.types';
 
 @Injectable()
@@ -51,9 +51,9 @@ export class EditorInputService {
     while (i < html.length) {
       if (html[i] === '<') {
         const closeIdx = html.indexOf('>', i);
-        const isTag = closeIdx !== -1 && 
-                      !html.substring(i + 1, closeIdx).includes('<') &&
-                      /^(?:[a-zA-Z!]|\/[a-zA-Z])/.test(html.substring(i + 1, closeIdx + 1));
+        const isTag = closeIdx !== -1 &&
+          !html.substring(i + 1, closeIdx).includes('<') &&
+          /^(?:[a-zA-Z!]|\/[a-zA-Z])/.test(html.substring(i + 1, closeIdx + 1));
 
         if (isTag) {
           const startHtmlPos = i;
@@ -66,8 +66,9 @@ export class EditorInputService {
 
           // Treat <br> tags as a space in plain text
           const lowercaseTag = tagContent.trim().toLowerCase();
-          const isBr = lowercaseTag === 'br' || lowercaseTag === 'br/' || lowercaseTag.startsWith('br ') || lowercaseTag.startsWith('br/');
-          if (isBr) {
+          const isDiv = lowercaseTag === 'div' || lowercaseTag.startsWith('div/') || lowercaseTag.startsWith('div');
+
+          if (isDiv) {
             plainText += ' ';
           }
 

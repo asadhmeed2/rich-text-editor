@@ -53,7 +53,7 @@ describe('EditorInputService', () => {
 
     it('should parse nested and sequential tags correctly', () => {
       const result = service.parseHtml('<div>Welcome to <i>rich-text</i> editor</div>');
-      expect(result.plainText).toBe('Welcome to rich-text editor');
+      expect(result.plainText).toBe(' Welcome to rich-text editor');
       expect(result.html.tags.length).toBe(4);
 
       // <div>
@@ -67,21 +67,21 @@ describe('EditorInputService', () => {
       expect(result.html.tags[1]).toEqual({
         tag: 'i',
         htmlPosition: 16,
-        textPosition: 11
+        textPosition: 12
       });
 
       // </i>
       expect(result.html.tags[2]).toEqual({
         tag: '/i',
         htmlPosition: 28,
-        textPosition: 20
+        textPosition: 21
       });
 
       // </div>
       expect(result.html.tags[3]).toEqual({
         tag: '/div',
         htmlPosition: 39,
-        textPosition: 27
+        textPosition: 28
       });
     });
 
@@ -129,21 +129,30 @@ describe('EditorInputService', () => {
       expect(result4.plainText).toBe('<123>test</123>');
       expect(result4.html.tags).toEqual([]);
 
-      const result5 = service.parseHtml('asad<div><br></div>hmeed');
-      expect(result5.plainText).toBe('asad hmeed');
-      expect(result5.html.tags).toEqual([{
-        tag: 'div',
-        htmlPosition: 4,
-        textPosition: 4
-      }, {
-        tag: 'br',
-        htmlPosition: 9,
-        textPosition: 4
-      }, {
-        tag: '/div',
-        htmlPosition: 13,
-        textPosition: 5
-      }]);
+      const result5 = service.parseHtml('<div>asad</div><div>hmeed</div>');
+      expect(result5.plainText).toBe(' asad hmeed');
+      expect(result5.html.tags).toEqual([
+        {
+          tag: "div",
+          htmlPosition: 0,
+          textPosition: 0
+        },
+        {
+          tag: "/div",
+          htmlPosition: 9,
+          textPosition: 5
+        },
+        {
+          tag: "div",
+          htmlPosition: 15,
+          textPosition: 5
+        },
+        {
+          tag: "/div",
+          htmlPosition: 25,
+          textPosition: 11
+        }
+      ]);
     });
   });
 });
