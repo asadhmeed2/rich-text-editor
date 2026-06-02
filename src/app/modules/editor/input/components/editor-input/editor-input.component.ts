@@ -48,12 +48,14 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   maxLength = input<number>(1000);
   readOnly = input<boolean>(false);
   outputFormat = input<EditorOutputFormat>('html');
+  imageUploadHandler = input<((file: File) => Promise<string> | string) | undefined>(undefined);
 
   // Signal-based outputs
   contentChange = output<string | EditorObjectOutput>();
   focusChange = output<boolean>();
 
   editableArea = viewChild<ElementRef<HTMLDivElement>>('editableArea');
+  imageInput = viewChild<ElementRef<HTMLInputElement>>('imageInput');
 
   private quill?: Quill;
   private pendingValue: any = null;
@@ -83,7 +85,8 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         placeholder: ph,
         maxLength: this.maxLength(),
         readOnly: isReadOnly,
-        outputFormat: this.outputFormat()
+        outputFormat: this.outputFormat(),
+        imageUploadHandler: this.imageUploadHandler()
       });
 
       if (this.quill) {
@@ -108,7 +111,8 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       placeholder: this.placeholder(),
       maxLength: this.maxLength(),
       readOnly: this.readOnly(),
-      outputFormat: this.outputFormat()
+      outputFormat: this.outputFormat(),
+      imageUploadHandler: this.imageUploadHandler()
     });
   }
 
@@ -317,5 +321,58 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     if (!target.closest('.color-picker-container')) {
       this.isColorPickerOpen = false;
     }
+  }
+
+  triggerImageInput(): void {
+    if (this.readOnly()) return;
+    const fileInput = this.imageInput();
+    if (fileInput) {
+      fileInput.nativeElement.click();
+    }
+  }
+
+  async onImageSelected(event: Event): Promise<void> {
+    if (this.readOnly() || !this.quill) return;
+
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    input.value = '';
+
+    try {
+      let imageSrc = '';
+      const handler = this.imageUploadHandler() || this.editorService.config().imageUploadHandler;
+      
+      if (handler) {
+        imageSrc = await handler(file);
+      } else {
+        imageSrc = await this.readFileAsDataURL(file);
+      }
+
+      if (imageSrc) {
+        this.insertImageIntoEditor(imageSrc);
+      }
+    } catch (error) {
+      console.error('Failed to process image:', error);
+    }
+  }
+
+  private readFileAsDataURL(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private insertImageIntoEditor(src: string): void {
+    if (!this.quill) return;
+    this.quill.focus();
+    const range = this.quill.getSelection(true);
+    const index = range ? range.index : this.quill.getLength();
+    this.quill.insertEmbed(index, 'image', src);
+    this.quill.setSelection(index + 1);
   }
 }

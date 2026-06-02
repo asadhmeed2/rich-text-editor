@@ -172,5 +172,32 @@ describe('EditorInputService', () => {
         }
       ]);
     });
+
+    it('should parse image tags, extract src and positions correctly', () => {
+      const result = service.parseHtml('Hello <img src="logo.png"> World!');
+      expect(result.plainText).toBe('Hello  World!');
+      expect(result.images.length).toBe(1);
+      expect(result.images[0]).toEqual({
+        src: 'logo.png',
+        htmlPosition: 6,
+        textPosition: 6
+      });
+    });
+
+    it('should parse multiple image tags correctly', () => {
+      const result = service.parseHtml('A <img src="img1.png"> B <img src="img2.png"> C');
+      expect(result.plainText).toBe('A  B  C');
+      expect(result.images.length).toBe(2);
+      expect(result.images[0]).toEqual({
+        src: 'img1.png',
+        htmlPosition: 2,
+        textPosition: 2
+      });
+      expect(result.images[1]).toEqual({
+        src: 'img2.png',
+        htmlPosition: 25,
+        textPosition: 5
+      });
+    });
   });
 });

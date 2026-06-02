@@ -6,12 +6,19 @@ export interface HtmlTagInfo {
   textPosition: number;
 }
 
+export interface EditorImageInfo {
+  src: string;
+  htmlPosition: number;
+  textPosition: number;
+}
+
 export interface EditorObjectOutput {
   plainText: string;
   html: {
     content: string;
     tags: HtmlTagInfo[];
   };
+  images: EditorImageInfo[];
 }
 
 export interface EditorInputConfig {
@@ -19,6 +26,7 @@ export interface EditorInputConfig {
   maxLength?: number;
   readOnly?: boolean;
   outputFormat?: EditorOutputFormat;
+  imageUploadHandler?: (file: File) => Promise<string> | string;
 }
 
 export interface EditorState {

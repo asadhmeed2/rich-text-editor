@@ -3,7 +3,8 @@ import {
   EditorInputConfig,
   EditorState,
   HtmlTagInfo,
-  EditorObjectOutput
+  EditorObjectOutput,
+  EditorImageInfo
 } from '../types/editor-input.types';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class EditorInputService {
   parseHtml(html: string): EditorObjectOutput {
     let plainText = "";
     const tags: HtmlTagInfo[] = [];
+    const images: EditorImageInfo[] = [];
     let i = 0;
 
     const entityMap: Record<string, string> = {
@@ -64,8 +66,21 @@ export class EditorInputService {
             textPosition: plainText.length
           });
 
-          // Treat <br> tags as a space in plain text
+          // Check if it's an <img> tag
           const lowercaseTag = tagContent.trim().toLowerCase();
+          const isImg = lowercaseTag.startsWith('img');
+
+          if (isImg) {
+            const srcMatch = /src=["']([^"']*)["']/i.exec(tagContent);
+            const src = srcMatch ? srcMatch[1] : '';
+            images.push({
+              src,
+              htmlPosition: startHtmlPos,
+              textPosition: plainText.length
+            });
+          }
+
+          // Treat <br> tags as a space in plain text
           const isDiv = lowercaseTag === 'div' || lowercaseTag.startsWith('div');
 
           if (isDiv) {
@@ -104,7 +119,8 @@ export class EditorInputService {
       html: {
         content: html,
         tags
-      }
+      },
+      images
     };
   }
 
