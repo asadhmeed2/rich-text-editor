@@ -112,6 +112,24 @@ describe('EditorInputService', () => {
       });
     });
 
+    it('should handle tags containing background-color inline styles from highlighter', () => {
+      const result = service.parseHtml('<span style="background-color: rgb(255, 243, 205);">Highlight</span>');
+      expect(result.plainText).toBe('Highlight');
+      expect(result.html.tags.length).toBe(2);
+
+      expect(result.html.tags[0]).toEqual({
+        tag: 'span style="background-color: rgb(255, 243, 205);"',
+        htmlPosition: 0,
+        textPosition: 0
+      });
+
+      expect(result.html.tags[1]).toEqual({
+        tag: '/span',
+        htmlPosition: 61,
+        textPosition: 9
+      });
+    });
+
     it('should handle stray < characters that are not tags', () => {
       const result1 = service.parseHtml('Hello <');
       expect(result1.plainText).toBe('Hello <');

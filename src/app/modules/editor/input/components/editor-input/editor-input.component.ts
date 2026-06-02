@@ -34,10 +34,14 @@ Quill.register(DivBlock, true);
       useExisting: forwardRef(() => EditorInputComponent),
       multi: true
     }
-  ]
+  ],
+  host: {
+    '(document:click)': 'onDocumentClick($event)'
+  }
 })
 export class EditorInputComponent implements OnInit, AfterViewInit, ControlValueAccessor {
   protected readonly editorService = inject(EditorInputService);
+  private readonly elementRef = inject(ElementRef);
 
   // Signal-based inputs
   placeholder = input<string>('Type your content here...');
@@ -53,6 +57,17 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
 
   private quill?: Quill;
   private pendingValue: any = null;
+
+  isColorPickerOpen = false;
+
+  highlightColors = [
+    { name: 'Yellow', value: '#fff3cd' },
+    { name: 'Green', value: '#d1e7dd' },
+    { name: 'Blue', value: '#cff4fc' },
+    { name: 'Red', value: '#f8d7da' },
+    { name: 'Orange', value: '#ffe5d9' },
+    { name: 'Purple', value: '#f3e5f5' }
+  ];
 
   // Form Control Value Accessor callbacks
   private onChange: (value: string | EditorObjectOutput) => void = () => {};
@@ -283,5 +298,24 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     }
     this.editorService.clear();
     this.onChange(this.editorService.outputValue());
+  }
+
+  toggleColorPicker(): void {
+    if (this.readOnly()) return;
+    this.isColorPickerOpen = !this.isColorPickerOpen;
+  }
+
+  selectHighlightColor(color: string | false): void {
+    if (this.readOnly() || !this.quill) return;
+    this.quill.focus();
+    this.quill.format('background', color);
+    this.isColorPickerOpen = false;
+  }
+
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.color-picker-container')) {
+      this.isColorPickerOpen = false;
+    }
   }
 }
