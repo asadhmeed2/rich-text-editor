@@ -22,6 +22,31 @@ class DivBlock extends Block {
 }
 Quill.register(DivBlock, true);
 
+// Customize standard image format to support width and height attributes natively in the DOM
+const ImageBlot = Quill.import('formats/image') as any;
+class CustomImageBlot extends ImageBlot {
+  static create(value: any) {
+    const node = super.create(value);
+    if (typeof value === 'object' && value.src) {
+      node.setAttribute('src', value.src);
+      if (value.width) node.setAttribute('width', value.width.toString());
+      if (value.height) node.setAttribute('height', value.height.toString());
+    } else {
+      node.setAttribute('src', value);
+    }
+    return node;
+  }
+
+  static value(node: HTMLElement) {
+    return {
+      src: node.getAttribute('src'),
+      width: node.getAttribute('width'),
+      height: node.getAttribute('height')
+    };
+  }
+}
+Quill.register(CustomImageBlot, true);
+
 @Component({
   selector: 'app-editor-input',
   standalone: true,
@@ -72,8 +97,8 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   ];
 
   // Form Control Value Accessor callbacks
-  private onChange: (value: string | EditorObjectOutput) => void = () => {};
-  private onTouched: () => void = () => {};
+  private onChange: (value: string | EditorObjectOutput) => void = () => { };
+  private onTouched: () => void = () => { };
 
   constructor() {
     // Effect to sync signal inputs to the service's configuration
@@ -343,7 +368,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     try {
       let imageSrc = '';
       const handler = this.imageUploadHandler() || this.editorService.config().imageUploadHandler;
-      
+
       if (handler) {
         imageSrc = await handler(file);
       } else {
@@ -369,10 +394,44 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
 
   private insertImageIntoEditor(src: string): void {
     if (!this.quill) return;
-    this.quill.focus();
-    const range = this.quill.getSelection(true);
-    const index = range ? range.index : this.quill.getLength();
-    this.quill.insertEmbed(index, 'image', src);
-    this.quill.setSelection(index + 1);
+
+    const editorEl = this.editableArea()?.nativeElement;
+    if (!editorEl) return;
+
+    const editorWidth = editorEl.clientWidth || 400;
+    const editorHeight = editorEl.clientHeight || 300;
+
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      const originalWidth = img.naturalWidth || 200;
+      const originalHeight = img.naturalHeight || 150;
+
+      const ratio = originalWidth / originalHeight;
+      const maxWidth = editorWidth;
+      const maxHeight = editorHeight;
+
+      let newWidth = maxWidth;
+      let newHeight = maxWidth / ratio;
+
+      if (newHeight > maxHeight) {
+        newHeight = maxHeight;
+        newWidth = maxHeight * ratio;
+      }
+
+      const finalWidth = Math.round(newWidth);
+      const finalHeight = Math.round(newHeight);
+
+      this.quill!.focus();
+      const range = this.quill!.getSelection(true);
+      const index = range ? range.index : this.quill!.getLength();
+
+      this.quill!.insertEmbed(index, 'image', {
+        src,
+        width: finalWidth.toString(),
+        height: finalHeight.toString()
+      });
+      this.quill!.setSelection(index + 1);
+    };
   }
 }
