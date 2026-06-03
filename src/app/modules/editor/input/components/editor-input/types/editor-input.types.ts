@@ -2,13 +2,11 @@ export type EditorOutputFormat = 'html' | 'text' | 'object';
 
 export interface HtmlTagInfo {
   tag: string;
-  htmlPosition: number;
   textPosition: number;
 }
 
 export interface EditorImageInfo {
   src: string;
-  htmlPosition: number;
   textPosition: number;
 }
 

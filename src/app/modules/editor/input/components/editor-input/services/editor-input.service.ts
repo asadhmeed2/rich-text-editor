@@ -66,7 +66,6 @@ export class EditorInputService {
           /^(?:[a-zA-Z!]|\/[a-zA-Z])/.test(html.substring(i + 1, closeIdx + 1));
 
         if (isTag) {
-          const startHtmlPos = i;
           let tagContent = html.substring(i + 1, closeIdx);
 
           // Check if it's an <img> tag
@@ -83,14 +82,12 @@ export class EditorInputService {
 
             images[uuid] = {
               src,
-              htmlPosition: startHtmlPos,
               textPosition: plainText.length
             };
           }
 
           tags.push({
             tag: tagContent,
-            htmlPosition: startHtmlPos,
             textPosition: plainText.length
           });
 

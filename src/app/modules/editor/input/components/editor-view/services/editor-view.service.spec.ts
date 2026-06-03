@@ -46,8 +46,8 @@ describe('EditorViewService', () => {
         html: {
           content: 'Hello <b>world</b>!',
           tags: [
-            { tag: 'b', htmlPosition: 6, textPosition: 6 },
-            { tag: '/b', htmlPosition: 14, textPosition: 11 }
+            { tag: 'b', textPosition: 6 },
+            { tag: '/b', textPosition: 11 }
           ]
         },
         images: {}
@@ -62,13 +62,12 @@ describe('EditorViewService', () => {
         html: {
           content: 'Hello <img src="logo.png" width="200"> World!',
           tags: [
-            { tag: `img src="${uuid}" width="200"`, htmlPosition: 6, textPosition: 6 }
+            { tag: `img src="${uuid}" width="200"`, textPosition: 6 }
           ]
         },
         images: {
           [uuid]: {
             src: 'logo.png',
-            htmlPosition: 6,
             textPosition: 6
           }
         }

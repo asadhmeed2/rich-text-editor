@@ -39,14 +39,12 @@ describe('EditorInputService', () => {
       // <b> tag
       expect(result.html.tags[0]).toEqual({
         tag: 'b',
-        htmlPosition: 6,
         textPosition: 6
       });
 
       // </b> tag
       expect(result.html.tags[1]).toEqual({
         tag: '/b',
-        htmlPosition: 14,
         textPosition: 11
       });
     });
@@ -59,28 +57,24 @@ describe('EditorInputService', () => {
       // <div>
       expect(result.html.tags[0]).toEqual({
         tag: 'div',
-        htmlPosition: 0,
         textPosition: 0
       });
 
       // <i>
       expect(result.html.tags[1]).toEqual({
         tag: 'i',
-        htmlPosition: 16,
         textPosition: 12
       });
 
       // </i>
       expect(result.html.tags[2]).toEqual({
         tag: '/i',
-        htmlPosition: 28,
         textPosition: 21
       });
 
       // </div>
       expect(result.html.tags[3]).toEqual({
         tag: '/div',
-        htmlPosition: 39,
         textPosition: 28
       });
     });
@@ -100,14 +94,12 @@ describe('EditorInputService', () => {
       // Opening tag with attribute
       expect(result.html.tags[0]).toEqual({
         tag: 'span style="color: red;"',
-        htmlPosition: 0,
         textPosition: 0
       });
 
       // Closing tag
       expect(result.html.tags[1]).toEqual({
         tag: '/span',
-        htmlPosition: 31,
         textPosition: 5
       });
     });
@@ -119,13 +111,11 @@ describe('EditorInputService', () => {
 
       expect(result.html.tags[0]).toEqual({
         tag: 'span style="background-color: rgb(255, 243, 205);"',
-        htmlPosition: 0,
         textPosition: 0
       });
 
       expect(result.html.tags[1]).toEqual({
         tag: '/span',
-        htmlPosition: 61,
         textPosition: 9
       });
     });
@@ -152,22 +142,18 @@ describe('EditorInputService', () => {
       expect(result5.html.tags).toEqual([
         {
           tag: "div",
-          htmlPosition: 0,
           textPosition: 0
         },
         {
           tag: "/div",
-          htmlPosition: 9,
           textPosition: 5
         },
         {
           tag: "div",
-          htmlPosition: 15,
           textPosition: 5
         },
         {
           tag: "/div",
-          htmlPosition: 25,
           textPosition: 11
         }
       ]);
@@ -185,14 +171,12 @@ describe('EditorInputService', () => {
 
       expect(result.images[uuid]).toEqual({
         src: 'logo.png',
-        htmlPosition: 6,
         textPosition: 6
       });
 
       expect(result.html.tags.length).toBe(1);
       expect(result.html.tags[0]).toEqual({
         tag: `img src="${uuid}"`,
-        htmlPosition: 6,
         textPosition: 6
       });
     });
@@ -213,24 +197,20 @@ describe('EditorInputService', () => {
 
       expect(result.images[uuid1]).toEqual({
         src: 'img1.png',
-        htmlPosition: 2,
         textPosition: 2
       });
       expect(result.images[uuid2]).toEqual({
         src: 'img2.png',
-        htmlPosition: 25,
         textPosition: 5
       });
 
       expect(result.html.tags.length).toBe(2);
       expect(result.html.tags[0]).toEqual({
         tag: `img src="${uuid1}"`,
-        htmlPosition: 2,
         textPosition: 2
       });
       expect(result.html.tags[1]).toEqual({
         tag: `img src="${uuid2}"`,
-        htmlPosition: 25,
         textPosition: 5
       });
     });
