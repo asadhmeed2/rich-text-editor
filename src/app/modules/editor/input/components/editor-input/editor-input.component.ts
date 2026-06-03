@@ -31,6 +31,7 @@ class CustomImageBlot extends ImageBlot {
       node.setAttribute('src', value.src);
       if (value.width) node.setAttribute('width', value.width.toString());
       if (value.height) node.setAttribute('height', value.height.toString());
+      if (value.placeholderId) node.setAttribute('data-placeholder-id', value.placeholderId);
     } else {
       node.setAttribute('src', value);
     }
@@ -41,7 +42,8 @@ class CustomImageBlot extends ImageBlot {
     return {
       src: node.getAttribute('src'),
       width: node.getAttribute('width'),
-      height: node.getAttribute('height')
+      height: node.getAttribute('height'),
+      placeholderId: node.getAttribute('data-placeholder-id')
     };
   }
 }
@@ -388,7 +390,11 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     const url = this.imageUrlInput.trim();
     this.isImageMenuOpen = false;
     this.imageUrlInput = '';
-    this.insertImageIntoEditor(url);
+
+    const placeholderId = 'placeholder-' + Math.random().toString(36).substring(2, 9);
+    const index = this.getInsertionIndex();
+    this.insertPlaceholder(index, placeholderId);
+    this.replacePlaceholderWithImage(placeholderId, url);
   }
 
   triggerImageInput(): void {
@@ -408,6 +414,10 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     const file = input.files[0];
     input.value = '';
 
+    const placeholderId = 'placeholder-' + Math.random().toString(36).substring(2, 9);
+    const index = this.getInsertionIndex();
+    this.insertPlaceholder(index, placeholderId);
+
     try {
       let imageSrc = '';
       const handler = this.imageUploadHandler() || this.editorService.config().imageUploadHandler;
@@ -419,10 +429,13 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       }
 
       if (imageSrc) {
-        this.insertImageIntoEditor(imageSrc);
+        this.replacePlaceholderWithImage(placeholderId, imageSrc);
+      } else {
+        this.removePlaceholder(placeholderId);
       }
     } catch (error) {
       console.error('Failed to process image:', error);
+      this.removePlaceholder(placeholderId);
     }
   }
 
@@ -435,8 +448,31 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     });
   }
 
-  private insertImageIntoEditor(src: string): void {
+  private getInsertionIndex(): number {
+    if (!this.quill) return 0;
+    this.quill.focus();
+    const range = this.quill.getSelection(true);
+    return range ? range.index : this.quill.getLength();
+  }
+
+  private insertPlaceholder(index: number, placeholderId: string): void {
     if (!this.quill) return;
+    const loadingSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23f8f9fa" rx="12"/><circle cx="200" cy="150" r="24" fill="none" stroke="%233674e6" stroke-width="4" stroke-dasharray="100 50"><animateTransform attributeName="transform" type="rotate" from="0 200 150" to="360 200 150" dur="1s" repeatCount="indefinite"/></circle><text x="200" y="210" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" fill="%236c757d" text-anchor="middle" font-weight="500">Loading image...</text></svg>`;
+    
+    this.quill.insertEmbed(index, 'image', {
+      src: loadingSvg,
+      width: '400',
+      height: '300',
+      placeholderId
+    });
+    this.quill.setSelection(index + 1);
+  }
+
+  private replacePlaceholderWithImage(placeholderId: string, src: string): void {
+    if (!this.quill) return;
+
+    const imgNode = this.quill.root.querySelector(`img[data-placeholder-id="${placeholderId}"]`) as HTMLImageElement;
+    if (!imgNode) return;
 
     const editorEl = this.editableArea()?.nativeElement;
     if (!editorEl) return;
@@ -465,16 +501,29 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       const finalWidth = Math.round(newWidth);
       const finalHeight = Math.round(newHeight);
 
-      this.quill!.focus();
-      const range = this.quill!.getSelection(true);
-      const index = range ? range.index : this.quill!.getLength();
+      imgNode.setAttribute('src', src);
+      imgNode.setAttribute('width', finalWidth.toString());
+      imgNode.setAttribute('height', finalHeight.toString());
+      imgNode.removeAttribute('data-placeholder-id');
 
-      this.quill!.insertEmbed(index, 'image', {
-        src,
-        width: finalWidth.toString(),
-        height: finalHeight.toString()
-      });
-      this.quill!.setSelection(index + 1);
+      this.quill!.update();
     };
+
+    img.onerror = () => {
+      console.error('Failed to load image source:', src);
+      this.removePlaceholder(placeholderId);
+    };
+  }
+
+  private removePlaceholder(placeholderId: string): void {
+    if (!this.quill) return;
+    const imgNode = this.quill.root.querySelector(`img[data-placeholder-id="${placeholderId}"]`);
+    if (imgNode) {
+      const blot = Quill.find(imgNode) as any;
+      if (blot) {
+        blot.remove();
+        this.quill.update();
+      }
+    }
   }
 }
