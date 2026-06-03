@@ -53,10 +53,7 @@ export class EditorInputService {
       '&#39;': "'"
     };
 
-    // Helper to generate a unique ID (UUID fallback)
-    const generateUUID = (): string => {
-      return uuid();
-    };
+
 
     while (i < html.length) {
       if (html[i] === '<') {
@@ -73,14 +70,14 @@ export class EditorInputService {
           const isImg = lowercaseTag.startsWith('img');
 
           if (isImg) {
-            const uuid = generateUUID();
+            const id = uuid();
             const srcMatch = /src=["']([^"']*)["']/i.exec(tagContent);
             const src = srcMatch ? srcMatch[1] : '';
 
             // Replace the original src content with the UUID inside the tag
-            tagContent = tagContent.replace(/(src=["'])([^"']*)(["'])/i, `$1${uuid}$3`);
+            tagContent = tagContent.replace(/(src=["'])([^"']*)(["'])/i, `$1${id}$3`);
 
-            images[uuid] = {
+            images[id] = {
               src,
               textPosition: plainText.length
             };
