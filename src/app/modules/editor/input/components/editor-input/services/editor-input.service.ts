@@ -1,4 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
+
+import { v4 as uuid } from 'uuid';
+
 import {
   EditorInputConfig,
   EditorState,
@@ -38,7 +41,7 @@ export class EditorInputService {
   parseHtml(html: string): EditorObjectOutput {
     let plainText = "";
     const tags: HtmlTagInfo[] = [];
-    const images: EditorImageInfo[] = [];
+    const images: Record<string, EditorImageInfo> = {};
     let i = 0;
 
     const entityMap: Record<string, string> = {
@@ -50,6 +53,11 @@ export class EditorInputService {
       '&#39;': "'"
     };
 
+    // Helper to generate a unique ID (UUID fallback)
+    const generateUUID = (): string => {
+      return uuid();
+    };
+
     while (i < html.length) {
       if (html[i] === '<') {
         const closeIdx = html.indexOf('>', i);
@@ -59,26 +67,32 @@ export class EditorInputService {
 
         if (isTag) {
           const startHtmlPos = i;
-          const tagContent = html.substring(i + 1, closeIdx);
-          tags.push({
-            tag: tagContent,
-            htmlPosition: startHtmlPos,
-            textPosition: plainText.length
-          });
+          let tagContent = html.substring(i + 1, closeIdx);
 
           // Check if it's an <img> tag
           const lowercaseTag = tagContent.trim().toLowerCase();
           const isImg = lowercaseTag.startsWith('img');
 
           if (isImg) {
+            const uuid = generateUUID();
             const srcMatch = /src=["']([^"']*)["']/i.exec(tagContent);
             const src = srcMatch ? srcMatch[1] : '';
-            images.push({
+
+            // Replace the original src content with the UUID inside the tag
+            tagContent = tagContent.replace(/(src=["'])([^"']*)(["'])/i, `$1${uuid}$3`);
+
+            images[uuid] = {
               src,
               htmlPosition: startHtmlPos,
               textPosition: plainText.length
-            });
+            };
           }
+
+          tags.push({
+            tag: tagContent,
+            htmlPosition: startHtmlPos,
+            textPosition: plainText.length
+          });
 
           // Treat <br> tags as a space in plain text
           const isDiv = lowercaseTag === 'div' || lowercaseTag.startsWith('div');

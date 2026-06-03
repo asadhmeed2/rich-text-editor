@@ -18,7 +18,7 @@ export interface EditorObjectOutput {
     content: string;
     tags: HtmlTagInfo[];
   };
-  images: EditorImageInfo[];
+  images: Record<string, EditorImageInfo>;
 }
 
 export interface EditorInputConfig {

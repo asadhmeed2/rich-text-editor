@@ -176,9 +176,22 @@ describe('EditorInputService', () => {
     it('should parse image tags, extract src and positions correctly', () => {
       const result = service.parseHtml('Hello <img src="logo.png"> World!');
       expect(result.plainText).toBe('Hello  World!');
-      expect(result.images.length).toBe(1);
-      expect(result.images[0]).toEqual({
+      
+      const keys = Object.keys(result.images);
+      expect(keys.length).toBe(1);
+      
+      const uuid = keys[0];
+      expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+      expect(result.images[uuid]).toEqual({
         src: 'logo.png',
+        htmlPosition: 6,
+        textPosition: 6
+      });
+
+      expect(result.html.tags.length).toBe(1);
+      expect(result.html.tags[0]).toEqual({
+        tag: `img src="${uuid}"`,
         htmlPosition: 6,
         textPosition: 6
       });
@@ -187,14 +200,36 @@ describe('EditorInputService', () => {
     it('should parse multiple image tags correctly', () => {
       const result = service.parseHtml('A <img src="img1.png"> B <img src="img2.png"> C');
       expect(result.plainText).toBe('A  B  C');
-      expect(result.images.length).toBe(2);
-      expect(result.images[0]).toEqual({
+      
+      const keys = Object.keys(result.images);
+      expect(keys.length).toBe(2);
+
+      const uuid1 = keys[0];
+      const uuid2 = keys[1];
+
+      expect(uuid1).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      expect(uuid2).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      expect(uuid1).not.toBe(uuid2);
+
+      expect(result.images[uuid1]).toEqual({
         src: 'img1.png',
         htmlPosition: 2,
         textPosition: 2
       });
-      expect(result.images[1]).toEqual({
+      expect(result.images[uuid2]).toEqual({
         src: 'img2.png',
+        htmlPosition: 25,
+        textPosition: 5
+      });
+
+      expect(result.html.tags.length).toBe(2);
+      expect(result.html.tags[0]).toEqual({
+        tag: `img src="${uuid1}"`,
+        htmlPosition: 2,
+        textPosition: 2
+      });
+      expect(result.html.tags[1]).toEqual({
+        tag: `img src="${uuid2}"`,
         htmlPosition: 25,
         textPosition: 5
       });
