@@ -10,7 +10,7 @@ import {
   AfterViewInit,
   forwardRef
 } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 import { EditorInputService } from './services/editor-input.service';
 import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.types';
 import Quill from 'quill';
@@ -50,6 +50,7 @@ Quill.register(CustomImageBlot, true);
 @Component({
   selector: 'app-editor-input',
   standalone: true,
+  imports: [FormsModule],
   templateUrl: './editor-input.component.html',
   styleUrl: './editor-input.component.scss',
   providers: [
@@ -86,6 +87,9 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   private pendingValue: any = null;
 
   isColorPickerOpen = false;
+  isImageMenuOpen = false;
+  imageMenuMode: 'select' | 'url' = 'select';
+  imageUrlInput = '';
 
   highlightColors = [
     { name: 'Yellow', value: '#fff3cd' },
@@ -346,6 +350,45 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     if (!target.closest('.color-picker-container')) {
       this.isColorPickerOpen = false;
     }
+    if (!target.closest('.image-menu-container')) {
+      this.isImageMenuOpen = false;
+      this.imageMenuMode = 'select';
+      this.imageUrlInput = '';
+    }
+  }
+
+  toggleImageMenu(): void {
+    if (this.readOnly()) return;
+    this.isImageMenuOpen = !this.isImageMenuOpen;
+    if (this.isImageMenuOpen) {
+      this.imageMenuMode = 'select';
+      this.imageUrlInput = '';
+    }
+  }
+
+  setImageMenuMode(mode: 'select' | 'url'): void {
+    this.imageMenuMode = mode;
+    if (mode === 'url') {
+      setTimeout(() => {
+        const inputEl = this.elementRef.nativeElement.querySelector('.image-url-input');
+        if (inputEl) {
+          inputEl.focus();
+        }
+      });
+    }
+  }
+
+  selectImageFromDisk(): void {
+    this.isImageMenuOpen = false;
+    this.triggerImageInput();
+  }
+
+  insertImageFromUrl(): void {
+    if (!this.imageUrlInput || !this.imageUrlInput.trim()) return;
+    const url = this.imageUrlInput.trim();
+    this.isImageMenuOpen = false;
+    this.imageUrlInput = '';
+    this.insertImageIntoEditor(url);
   }
 
   triggerImageInput(): void {
