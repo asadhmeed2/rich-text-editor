@@ -582,7 +582,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       const toolbarHeight = toolbarEl ? toolbarEl.clientHeight : 48;
       
       if (this.bubbleTop < toolbarHeight + 4) {
-        this.bubbleTop = imgRect.bottom - editorRect.top + 8;
+        this.bubbleTop = imgRect.top - editorRect.top + 8;
       }
       
       const maxLeft = editorRect.width - 258;
