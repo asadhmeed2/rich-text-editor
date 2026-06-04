@@ -244,3 +244,22 @@ img.selected-img-resize {
 .bubble-delete-btn:hover {
   background-color: rgba(248, 215, 218, 0.4);
 }
+
+.image-resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: hsl(0, 0%, 100%);
+  border: 2px solid hsl(220, 90%, 56%);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: nwse-resize;
+  z-index: 210;
+  box-sizing: border-box;
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.image-resize-handle:hover {
+  transform: scale(1.3);
+  background-color: hsl(220, 90%, 56%);
+}

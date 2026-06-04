@@ -189,6 +189,15 @@
     </div>
   }
 
+  <!-- Image Resizer Drag Handle -->
+  @if (selectedImageEl) {
+    <div class="image-resize-handle" 
+         [style.top.px]="handleTop" 
+         [style.left.px]="handleLeft"
+         (mousedown)="startImageResize($event)">
+    </div>
+  }
+
   <div class="editor-footer">
     <div class="editor-status">
       @if (editorService.config().readOnly) {

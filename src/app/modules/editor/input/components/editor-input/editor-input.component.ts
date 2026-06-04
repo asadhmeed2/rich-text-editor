@@ -96,6 +96,13 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   selectedImageEl: HTMLImageElement | null = null;
   bubbleTop = 0;
   bubbleLeft = 0;
+  handleTop = 0;
+  handleLeft = 0;
+  isResizing = false;
+  private resizeStartMouseX = 0;
+  private resizeStartWidth = 0;
+  private resizeRatio = 1;
+  private resizeMaxWidth = 400;
 
   highlightColors = [
     { name: 'Yellow', value: '#fff3cd' },
@@ -555,7 +562,9 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       this.quill.root.querySelectorAll('img').forEach(img => img.classList.remove('selected-img-resize'));
     }
     imgEl.classList.add('selected-img-resize');
-    this.repositionBubble();
+    setTimeout(() => {
+      this.repositionBubble();
+    });
   }
 
   clearImageSelection(): void {
@@ -568,27 +577,68 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   repositionBubble(): void {
     if (!this.selectedImageEl) return;
     
-    setTimeout(() => {
+    const imgRect = this.selectedImageEl.getBoundingClientRect();
+    const editorEl = this.elementRef.nativeElement.querySelector('.editor-container');
+    if (!editorEl) return;
+    const editorRect = editorEl.getBoundingClientRect();
+    
+    this.bubbleTop = imgRect.top - editorRect.top - 84; 
+    this.bubbleLeft = imgRect.left - editorRect.left + (imgRect.width / 2) - 125;
+    
+    const toolbarEl = editorEl.querySelector('.editor-toolbar');
+    const toolbarHeight = toolbarEl ? toolbarEl.clientHeight : 48;
+    
+    if (this.bubbleTop < toolbarHeight + 4) {
+      this.bubbleTop = imgRect.top - editorRect.top + 8;
+    }
+    
+    const maxLeft = editorRect.width - 258;
+    if (this.bubbleLeft < 8) this.bubbleLeft = 8;
+    if (this.bubbleLeft > maxLeft) this.bubbleLeft = maxLeft;
+
+    this.handleTop = imgRect.bottom - editorRect.top - 6;
+    this.handleLeft = imgRect.right - editorRect.left - 6;
+  }
+
+  startImageResize(event: MouseEvent): void {
+    if (this.readOnly() || !this.selectedImageEl) return;
+    event.preventDefault();
+    
+    this.isResizing = true;
+    this.resizeStartMouseX = event.clientX;
+    this.resizeStartWidth = this.selectedImageWidth;
+    this.resizeRatio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
+    
+    const editorEl = this.editableArea()?.nativeElement;
+    this.resizeMaxWidth = editorEl ? editorEl.clientWidth : 400;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
       if (!this.selectedImageEl) return;
-      const imgRect = this.selectedImageEl.getBoundingClientRect();
-      const editorEl = this.elementRef.nativeElement.querySelector('.editor-container');
-      if (!editorEl) return;
-      const editorRect = editorEl.getBoundingClientRect();
+      const deltaX = moveEvent.clientX - this.resizeStartMouseX;
+      let newWidth = this.resizeStartWidth + deltaX;
       
-      this.bubbleTop = imgRect.top - editorRect.top - 84; 
-      this.bubbleLeft = imgRect.left - editorRect.left + (imgRect.width / 2) - 125;
+      if (newWidth < 30) newWidth = 30;
+      if (newWidth > this.resizeMaxWidth) newWidth = this.resizeMaxWidth;
       
-      const toolbarEl = editorEl.querySelector('.editor-toolbar');
-      const toolbarHeight = toolbarEl ? toolbarEl.clientHeight : 48;
+      const newHeight = Math.round(newWidth / this.resizeRatio);
       
-      if (this.bubbleTop < toolbarHeight + 4) {
-        this.bubbleTop = imgRect.top - editorRect.top + 8;
+      this.selectedImageEl.setAttribute('width', Math.round(newWidth).toString());
+      this.selectedImageEl.setAttribute('height', Math.round(newHeight).toString());
+      
+      this.repositionBubble();
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      this.isResizing = false;
+      if (this.quill) {
+        this.quill.update();
       }
-      
-      const maxLeft = editorRect.width - 258;
-      if (this.bubbleLeft < 8) this.bubbleLeft = 8;
-      if (this.bubbleLeft > maxLeft) this.bubbleLeft = maxLeft;
-    });
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }
 
   get selectedImageWidth(): number {
