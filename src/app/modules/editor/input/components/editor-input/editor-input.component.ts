@@ -64,7 +64,8 @@ Quill.register(CustomImageBlot, true);
     }
   ],
   host: {
-    '(document:click)': 'onDocumentClick($event)'
+    '(document:click)': 'onDocumentClick($event)',
+    '(window:resize)': 'onWindowResize()'
   }
 })
 export class EditorInputComponent implements OnInit, AfterViewInit, ControlValueAccessor {
@@ -92,6 +93,9 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   isImageMenuOpen = false;
   imageMenuMode: 'select' | 'url' = 'select';
   imageUrlInput = '';
+  selectedImageEl: HTMLImageElement | null = null;
+  bubbleTop = 0;
+  bubbleLeft = 0;
 
   highlightColors = [
     { name: 'Yellow', value: '#fff3cd' },
@@ -182,6 +186,27 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
           this.onBlur();
         } else if (oldRange === null) {
           this.onFocus();
+        }
+      });
+
+      // Listen to click events on images in the editor root
+      this.quill.root.addEventListener('click', (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (target && target.tagName === 'IMG') {
+          if (target.getAttribute('data-placeholder-id')) {
+            this.clearImageSelection();
+            return;
+          }
+          this.selectImageForResizing(target as HTMLImageElement);
+        } else {
+          this.clearImageSelection();
+        }
+      });
+
+      // Listen to scroll events in the editor root to update bubble position
+      this.quill.root.addEventListener('scroll', () => {
+        if (this.selectedImageEl) {
+          this.repositionBubble();
         }
       });
 
@@ -357,6 +382,15 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       this.imageMenuMode = 'select';
       this.imageUrlInput = '';
     }
+    if (!target.closest('.image-resize-bubble') && target.tagName !== 'IMG') {
+      this.clearImageSelection();
+    }
+  }
+
+  onWindowResize(): void {
+    if (this.selectedImageEl) {
+      this.repositionBubble();
+    }
   }
 
   toggleImageMenu(): void {
@@ -513,6 +547,114 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       console.error('Failed to load image source:', src);
       this.removePlaceholder(placeholderId);
     };
+  }
+
+  selectImageForResizing(imgEl: HTMLImageElement): void {
+    this.selectedImageEl = imgEl;
+    if (this.quill) {
+      this.quill.root.querySelectorAll('img').forEach(img => img.classList.remove('selected-img-resize'));
+    }
+    imgEl.classList.add('selected-img-resize');
+    this.repositionBubble();
+  }
+
+  clearImageSelection(): void {
+    if (this.quill) {
+      this.quill.root.querySelectorAll('img').forEach(img => img.classList.remove('selected-img-resize'));
+    }
+    this.selectedImageEl = null;
+  }
+
+  repositionBubble(): void {
+    if (!this.selectedImageEl) return;
+    
+    setTimeout(() => {
+      if (!this.selectedImageEl) return;
+      const imgRect = this.selectedImageEl.getBoundingClientRect();
+      const editorEl = this.elementRef.nativeElement.querySelector('.editor-container');
+      if (!editorEl) return;
+      const editorRect = editorEl.getBoundingClientRect();
+      
+      this.bubbleTop = imgRect.top - editorRect.top - 84; 
+      this.bubbleLeft = imgRect.left - editorRect.left + (imgRect.width / 2) - 125;
+      
+      const toolbarEl = editorEl.querySelector('.editor-toolbar');
+      const toolbarHeight = toolbarEl ? toolbarEl.clientHeight : 48;
+      
+      if (this.bubbleTop < toolbarHeight + 4) {
+        this.bubbleTop = imgRect.bottom - editorRect.top + 8;
+      }
+      
+      const maxLeft = editorRect.width - 258;
+      if (this.bubbleLeft < 8) this.bubbleLeft = 8;
+      if (this.bubbleLeft > maxLeft) this.bubbleLeft = maxLeft;
+    });
+  }
+
+  get selectedImageWidth(): number {
+    if (!this.selectedImageEl) return 0;
+    return parseInt(this.selectedImageEl.getAttribute('width') || '0', 10);
+  }
+
+  get selectedImageHeight(): number {
+    if (!this.selectedImageEl) return 0;
+    return parseInt(this.selectedImageEl.getAttribute('height') || '0', 10);
+  }
+
+  onWidthInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const width = parseInt(input.value, 10);
+    if (this.selectedImageEl && width > 0) {
+      const ratio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
+      const height = Math.round(width / ratio);
+      this.selectedImageEl.setAttribute('width', width.toString());
+      this.selectedImageEl.setAttribute('height', height.toString());
+      this.quill!.update();
+      this.repositionBubble();
+    }
+  }
+
+  onHeightInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const height = parseInt(input.value, 10);
+    if (this.selectedImageEl && height > 0) {
+      const ratio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
+      const width = Math.round(height * ratio);
+      this.selectedImageEl.setAttribute('width', width.toString());
+      this.selectedImageEl.setAttribute('height', height.toString());
+      this.quill!.update();
+      this.repositionBubble();
+    }
+  }
+
+  resizeSelectedImage(scale: number): void {
+    if (!this.selectedImageEl) return;
+    
+    const editorEl = this.editableArea()?.nativeElement;
+    if (!editorEl) return;
+    
+    const editorWidth = editorEl.clientWidth || 400;
+    const originalWidth = this.selectedImageEl.naturalWidth || 200;
+    const originalHeight = this.selectedImageEl.naturalHeight || 150;
+    const ratio = originalWidth / originalHeight;
+    
+    const targetWidth = editorWidth * scale;
+    const targetHeight = targetWidth / ratio;
+    
+    this.selectedImageEl.setAttribute('width', Math.round(targetWidth).toString());
+    this.selectedImageEl.setAttribute('height', Math.round(targetHeight).toString());
+    this.quill!.update();
+    this.repositionBubble();
+  }
+
+  deleteSelectedImage(): void {
+    if (!this.selectedImageEl) return;
+    const blot = Quill.find(this.selectedImageEl) as any;
+    if (blot) {
+      blot.remove();
+      this.quill!.update();
+    }
+    this.clearImageSelection();
   }
 
   private removePlaceholder(placeholderId: string): void {

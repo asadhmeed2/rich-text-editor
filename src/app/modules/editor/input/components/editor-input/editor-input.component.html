@@ -157,6 +157,38 @@
   <div #editableArea
        class="editor-textarea"></div>
 
+  <!-- Image Resizer Float Bubble -->
+  @if (selectedImageEl) {
+    <div class="image-resize-bubble" 
+         [style.top.px]="bubbleTop" 
+         [style.left.px]="bubbleLeft">
+      <div class="bubble-presets">
+        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(0.25)">25%</button>
+        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(0.5)">50%</button>
+        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(0.75)">75%</button>
+        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(1)">100%</button>
+      </div>
+      <div class="bubble-custom">
+        <input type="number" 
+               class="bubble-input" 
+               placeholder="Width" 
+               [value]="selectedImageWidth"
+               (input)="onWidthInput($event)">
+        <span class="bubble-x">×</span>
+        <input type="number" 
+               class="bubble-input" 
+               placeholder="Height" 
+               [value]="selectedImageHeight"
+               (input)="onHeightInput($event)">
+        <button type="button" class="bubble-delete-btn" title="Delete Image" (mousedown)="$event.preventDefault(); deleteSelectedImage()">
+          <svg viewBox="0 0 24 24" width="14" height="14">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+
   <div class="editor-footer">
     <div class="editor-status">
       @if (editorService.config().readOnly) {

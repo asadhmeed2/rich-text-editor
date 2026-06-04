@@ -154,3 +154,93 @@
   25% { transform: translateX(-2px); }
   75% { transform: translateX(2px); }
 }
+
+img.selected-img-resize {
+  outline: 3px solid hsl(220, 90%, 56%);
+  box-shadow: 0 0 0 6px rgba(54, 116, 230, 0.2);
+  transition: outline 0.15s, box-shadow 0.15s;
+}
+
+.image-resize-bubble {
+  position: absolute;
+  background-color: hsl(0, 0%, 100%);
+  border: 1px solid hsl(210, 14%, 89%);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 200;
+  width: 250px;
+  animation: fadeIn 0.15s ease;
+  box-sizing: border-box;
+}
+
+.bubble-presets {
+  display: flex;
+  gap: 4px;
+}
+
+.preset-btn {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: hsl(210, 20%, 96%);
+  border: none;
+  border-radius: 4px;
+  color: hsl(210, 24%, 30%);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.preset-btn:hover {
+  background-color: rgba(54, 116, 230, 0.1);
+  color: hsl(220, 90%, 56%);
+}
+
+.bubble-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bubble-input {
+  width: 70px;
+  padding: 4px 8px;
+  font-size: 11px;
+  border: 1px solid hsl(210, 14%, 89%);
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.bubble-input:focus {
+  border-color: hsl(220, 90%, 56%);
+}
+
+.bubble-x {
+  font-size: 11px;
+  color: hsl(210, 10%, 60%);
+  font-weight: bold;
+}
+
+.bubble-delete-btn {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none;
+  background-color: transparent;
+  color: hsl(0, 84%, 60%);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.bubble-delete-btn:hover {
+  background-color: rgba(248, 215, 218, 0.4);
+}
