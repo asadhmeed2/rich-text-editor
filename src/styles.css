@@ -338,3 +338,25 @@ img.selected-img-resize {
   right: -6px;
   cursor: nwse-resize;
 }
+
+.editor-resize-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  cursor: ns-resize;
+  color: hsl(210, 10%, 60%);
+  margin-left: 10px;
+  user-select: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.editor-resize-handle:hover {
+  color: hsl(220, 90%, 56%);
+  transform: scale(1.1);
+}
+
+.editor-resize-handle:active {
+  transform: scale(0.95);
+}

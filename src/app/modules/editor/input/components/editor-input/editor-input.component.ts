@@ -741,6 +741,36 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     this.repositionBubble();
   }
 
+  startEditorResize(event: MouseEvent): void {
+    if (this.readOnly()) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const qlEditor = this.elementRef.nativeElement.querySelector('.ql-editor') as HTMLElement;
+    if (!qlEditor) return;
+
+    const startMouseY = event.clientY;
+    const startHeight = qlEditor.clientHeight;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const deltaY = moveEvent.clientY - startMouseY;
+      let newHeight = startHeight + deltaY;
+
+      if (newHeight < 150) newHeight = 150;
+
+      qlEditor.style.height = `${newHeight}px`;
+      qlEditor.style.maxHeight = 'none';
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }
+
   deleteSelectedImage(): void {
     if (!this.selectedImageEl) return;
     const blot = Quill.find(this.selectedImageEl) as any;

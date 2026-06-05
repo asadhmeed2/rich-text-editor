@@ -197,13 +197,25 @@
       }
     </div>
 
-    @if (editorService.config().maxLength !== undefined) {
-    <div class="character-count" [class.danger]="editorService.isLimitReached()">
-      {{ editorService.charCount() }} / {{ editorService.config().maxLength }}
-      @if (editorService.remainingChars() !== null) {
-      <span class="remaining-text">({{ editorService.remainingChars() }} left)</span>
+    <div style="display: flex; align-items: center;">
+      @if (editorService.config().maxLength !== undefined) {
+      <div class="character-count" [class.danger]="editorService.isLimitReached()">
+        {{ editorService.charCount() }} / {{ editorService.config().maxLength }}
+        @if (editorService.remainingChars() !== null) {
+        <span class="remaining-text">({{ editorService.remainingChars() }} left)</span>
+        }
+      </div>
+      }
+      @if (!editorService.config().readOnly) {
+      <div class="editor-resize-handle" 
+           title="Drag to resize editor"
+           (mousedown)="startEditorResize($event)">
+        <svg viewBox="0 0 24 24" width="14" height="14">
+          <line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="15" x2="20" y2="15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
       }
     </div>
-    }
   </div>
 </div>
