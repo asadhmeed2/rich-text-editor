@@ -1,219 +1,209 @@
-<div class="editor-container" 
-     [class.focused]="editorService.state().isFocused"
-     [class.limit-reached]="editorService.isLimitReached()"
-     [class.readonly]="editorService.config().readOnly">
-  
+<div class="editor-container" [class.focused]="editorService.state().isFocused"
+  [class.limit-reached]="editorService.isLimitReached()" [class.readonly]="editorService.config().readOnly">
+
   @if (!editorService.config().readOnly) {
-    <div class="editor-toolbar">
-      <!-- Bold -->
-      <button class="toolbar-btn" 
-              title="Bold" 
-              (mousedown)="$event.preventDefault(); formatDoc('bold')">
+  <div class="editor-toolbar">
+    <!-- Bold -->
+    <button class="toolbar-btn" title="Bold" (mousedown)="$event.preventDefault(); formatDoc('bold')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path
+          d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5Zm0 7h5.5a2.5 2.5 0 1 0 0-5H8v5ZM6 4h6.5a4.5 4.5 0 0 1 0 9H6V4Zm0 9h7.5a4.5 4.5 0 0 1 0 9H6v-9Z"
+          fill="currentColor" />
+      </svg>
+    </button>
+
+    <!-- Italic -->
+    <button class="toolbar-btn" title="Italic" (mousedown)="$event.preventDefault(); formatDoc('italic')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path d="M10 5h8v2h-3l-3.99 10H14v2H6v-2h3l3.99-10H10V5Z" fill="currentColor" />
+      </svg>
+    </button>
+
+    <!-- Underline -->
+    <button class="toolbar-btn" title="Underline" (mousedown)="$event.preventDefault(); formatDoc('underline')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path d="M8 3v9a4 4 0 1 0 8 0V3h2v9a6 6 0 1 1-12 0V3h2ZM4 20h16v2H4v-2Z" fill="currentColor" />
+      </svg>
+    </button>
+
+    <!-- Strikethrough -->
+    <button class="toolbar-btn" title="Strikethrough" (mousedown)="$event.preventDefault(); formatDoc('strikeThrough')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path d="M10 19h4v-3h-4v3ZM5 4h14v3h-5v3h-4V7H5V4Zm-1 7h16v2H4v-2Z" fill="currentColor" />
+      </svg>
+    </button>
+
+    <!-- Highlight Background Color -->
+    <div class="color-picker-container">
+      <button class="toolbar-btn" title="Highlight Color" [class.active]="isColorPickerOpen"
+        (mousedown)="$event.preventDefault(); toggleColorPicker()">
         <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5Zm0 7h5.5a2.5 2.5 0 1 0 0-5H8v5ZM6 4h6.5a4.5 4.5 0 0 1 0 9H6V4Zm0 9h7.5a4.5 4.5 0 0 1 0 9H6v-9Z" fill="currentColor"/>
+          <path
+            d="M15.24 6.64l-2.88-2.88c-.39-.39-1.02-.39-1.41 0L3.56 11.15c-.39.39-.39 1.02 0 1.41l2.88 2.88c.2.2.45.29.71.29.26 0 .51-.1.71-.29l7.38-7.39c.39-.39.39-1.03 0-1.41zm-6.28 7.37L6.08 11.1l5.24-5.24 2.88 2.88-5.24 5.27zm10.79.49h-3.47l-1.5 1.5h4.97c.55 0 1-.45 1-1s-.45-1-1-1zM3 18h18v2H3v-2z"
+            fill="currentColor" />
         </svg>
       </button>
 
-      <!-- Italic -->
-      <button class="toolbar-btn" 
-              title="Italic" 
-              (mousedown)="$event.preventDefault(); formatDoc('italic')">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M10 5h8v2h-3l-3.99 10H14v2H6v-2h3l3.99-10H10V5Z" fill="currentColor"/>
-        </svg>
-      </button>
-
-      <!-- Underline -->
-      <button class="toolbar-btn" 
-              title="Underline" 
-              (mousedown)="$event.preventDefault(); formatDoc('underline')">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M8 3v9a4 4 0 1 0 8 0V3h2v9a6 6 0 1 1-12 0V3h2ZM4 20h16v2H4v-2Z" fill="currentColor"/>
-        </svg>
-      </button>
-
-      <!-- Strikethrough -->
-      <button class="toolbar-btn" 
-              title="Strikethrough" 
-              (mousedown)="$event.preventDefault(); formatDoc('strikeThrough')">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M10 19h4v-3h-4v3ZM5 4h14v3h-5v3h-4V7H5V4Zm-1 7h16v2H4v-2Z" fill="currentColor"/>
-        </svg>
-      </button>
-
-      <!-- Highlight Background Color -->
-      <div class="color-picker-container">
-        <button class="toolbar-btn" 
-                title="Highlight Color" 
-                [class.active]="isColorPickerOpen"
-                (mousedown)="$event.preventDefault(); toggleColorPicker()">
-          <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M15.24 6.64l-2.88-2.88c-.39-.39-1.02-.39-1.41 0L3.56 11.15c-.39.39-.39 1.02 0 1.41l2.88 2.88c.2.2.45.29.71.29.26 0 .51-.1.71-.29l7.38-7.39c.39-.39.39-1.03 0-1.41zm-6.28 7.37L6.08 11.1l5.24-5.24 2.88 2.88-5.24 5.27zm10.79.49h-3.47l-1.5 1.5h4.97c.55 0 1-.45 1-1s-.45-1-1-1zM3 18h18v2H3v-2z" fill="currentColor"/>
+      @if (isColorPickerOpen) {
+      <div class="editor-dropdown color-dropdown" (mousedown)="$event.preventDefault()">
+        @for (color of highlightColors; track color.value) {
+        <button class="color-swatch" [style.background-color]="color.value" [title]="color.name"
+          (mousedown)="$event.preventDefault(); selectHighlightColor(color.value)">
+        </button>
+        }
+        <button class="color-swatch clear-swatch" title="No Highlight"
+          (mousedown)="$event.preventDefault(); selectHighlightColor(false)">
+          <svg viewBox="0 0 24 24" width="12" height="12">
+            <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2" />
           </svg>
         </button>
-        
-        @if (isColorPickerOpen) {
-          <div class="editor-dropdown color-dropdown" (mousedown)="$event.preventDefault()">
-            @for (color of highlightColors; track color.value) {
-              <button class="color-swatch"
-                      [style.background-color]="color.value"
-                      [title]="color.name"
-                      (mousedown)="$event.preventDefault(); selectHighlightColor(color.value)">
-              </button>
-            }
-            <button class="color-swatch clear-swatch"
-                    title="No Highlight"
-                    (mousedown)="$event.preventDefault(); selectHighlightColor(false)">
-              <svg viewBox="0 0 24 24" width="12" height="12">
-                <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </button>
-          </div>
-        }
       </div>
-
-      <div class="toolbar-separator"></div>
-
-      <!-- Unordered List -->
-      <button class="toolbar-btn" 
-              title="Bullet List" 
-              (mousedown)="$event.preventDefault(); formatDoc('insertUnorderedList')">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M4 10.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0-12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z" fill="currentColor"/>
-        </svg>
-      </button>
-
-      <!-- Ordered List -->
-      <button class="toolbar-btn" 
-              title="Numbered List" 
-              (mousedown)="$event.preventDefault(); formatDoc('insertOrderedList')">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M2 3.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z" fill="currentColor"/>
-        </svg>
-      </button>
-
-      <!-- Insert Image Menu -->
-      <div class="image-menu-container">
-        <button class="toolbar-btn" 
-                title="Insert Image" 
-                [class.active]="isImageMenuOpen"
-                (mousedown)="$event.preventDefault(); toggleImageMenu()">
-          <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/>
-          </svg>
-        </button>
-        
-        @if (isImageMenuOpen) {
-          <div class="editor-dropdown image-dropdown" (mousedown)="$event.preventDefault()">
-            @if (imageMenuMode === 'select') {
-              <button class="editor-dropdown-btn" (click)="selectImageFromDisk()">
-                <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
-                  <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" fill="currentColor"/>
-                </svg>
-                From Disk
-              </button>
-              <button class="editor-dropdown-btn" (click)="setImageMenuMode('url')">
-                <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
-                  <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="currentColor"/>
-                </svg>
-                From URL
-              </button>
-            } @else if (imageMenuMode === 'url') {
-              <div class="url-input-container">
-                <input type="text" 
-                       class="image-url-input" 
-                       placeholder="Enter image URL..." 
-                       [(ngModel)]="imageUrlInput"
-                       (keydown.enter)="insertImageFromUrl()"
-                       (keydown.escape)="setImageMenuMode('select')">
-                <div class="url-action-btns">
-                  <button class="url-btn cancel-btn" (click)="setImageMenuMode('select')">Cancel</button>
-                  <button class="url-btn confirm-btn" (click)="insertImageFromUrl()" [disabled]="!imageUrlInput.trim()">Insert</button>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </div>
-      <input type="file" 
-             #imageInput 
-             style="display: none;" 
-             accept="image/*" 
-             (change)="onImageSelected($event)">
-
-      <div class="toolbar-separator"></div>
-
-      <!-- Clear Formatting -->
-      <button class="toolbar-btn" 
-              title="Clear Formatting" 
-              (mousedown)="$event.preventDefault(); formatDoc('removeFormat')">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path d="M14.12 10.47 12 12.59l-2.12-2.12-1.41 1.41L10.59 14l-2.12 2.12 1.41 1.41L12 15.41l2.12 2.12 1.41-1.41L13.41 14l2.12-2.12-1.41-1.41ZM5 4h14v3h-5v3h-4V7H5V4Zm0 13h14v2H5v-2Z" fill="currentColor"/>
-        </svg>
-      </button>
+      }
     </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Unordered List -->
+    <button class="toolbar-btn" title="Bullet List"
+      (mousedown)="$event.preventDefault(); formatDoc('insertUnorderedList')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path
+          d="M4 10.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0-12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z"
+          fill="currentColor" />
+      </svg>
+    </button>
+
+    <!-- Ordered List -->
+    <button class="toolbar-btn" title="Numbered List"
+      (mousedown)="$event.preventDefault(); formatDoc('insertOrderedList')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path
+          d="M2 3.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z"
+          fill="currentColor" />
+      </svg>
+    </button>
+
+    <!-- Insert Image Menu -->
+    <div class="image-menu-container">
+      <button class="toolbar-btn" title="Insert Image" [class.active]="isImageMenuOpen"
+        (mousedown)="$event.preventDefault(); toggleImageMenu()">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path
+            d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+            fill="currentColor" />
+        </svg>
+      </button>
+
+      @if (isImageMenuOpen) {
+      <div class="editor-dropdown image-dropdown" (mousedown)="$event.preventDefault()">
+        @if (imageMenuMode === 'select') {
+        <button class="editor-dropdown-btn" (click)="selectImageFromDisk()">
+          <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
+            <path
+              d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
+              fill="currentColor" />
+          </svg>
+          From Disk
+        </button>
+        <button class="editor-dropdown-btn" (click)="setImageMenuMode('url')">
+          <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
+            <path
+              d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+              fill="currentColor" />
+          </svg>
+          From URL
+        </button>
+        } @else if (imageMenuMode === 'url') {
+        <div class="url-input-container">
+          <input type="text" class="image-url-input" placeholder="Enter image URL..." [(ngModel)]="imageUrlInput"
+            (keydown.enter)="insertImageFromUrl()" (keydown.escape)="setImageMenuMode('select')">
+          <div class="url-action-btns">
+            <button class="url-btn cancel-btn" (click)="setImageMenuMode('select')">Cancel</button>
+            <button class="url-btn confirm-btn" (click)="insertImageFromUrl()"
+              [disabled]="!imageUrlInput.trim()">Insert</button>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    <input type="file" #imageInput style="display: none;" accept="image/*" (change)="onImageSelected($event)">
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Clear Formatting -->
+    <button class="toolbar-btn" title="Clear Formatting"
+      (mousedown)="$event.preventDefault(); formatDoc('removeFormat')">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path
+          d="M14.12 10.47 12 12.59l-2.12-2.12-1.41 1.41L10.59 14l-2.12 2.12 1.41 1.41L12 15.41l2.12 2.12 1.41-1.41L13.41 14l2.12-2.12-1.41-1.41ZM5 4h14v3h-5v3h-4V7H5V4Zm0 13h14v2H5v-2Z"
+          fill="currentColor" />
+      </svg>
+    </button>
+  </div>
   }
-  
-  <div #editableArea
-       class="editor-textarea"></div>
+
+  <div #editableArea class="editor-textarea"></div>
 
   <!-- Image Resizer Float Bubble -->
   @if (selectedImageEl) {
-    <div class="image-resize-bubble" 
-         [style.top.px]="bubbleTop" 
-         [style.left.px]="bubbleLeft">
-      <div class="bubble-presets">
-        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(0.25)">25%</button>
-        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(0.5)">50%</button>
-        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(0.75)">75%</button>
-        <button type="button" class="preset-btn" (mousedown)="$event.preventDefault(); resizeSelectedImage(1)">100%</button>
-      </div>
-      <div class="bubble-custom">
-        <input type="number" 
-               class="bubble-input" 
-               placeholder="Width" 
-               [value]="selectedImageWidth"
-               (input)="onWidthInput($event)">
-        <span class="bubble-x">×</span>
-        <input type="number" 
-               class="bubble-input" 
-               placeholder="Height" 
-               [value]="selectedImageHeight"
-               (input)="onHeightInput($event)">
-        <button type="button" class="bubble-delete-btn" title="Delete Image" (mousedown)="$event.preventDefault(); deleteSelectedImage()">
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
-          </svg>
-        </button>
-      </div>
+  <div class="image-resize-bubble" [style.top.px]="bubbleTop" [style.left.px]="bubbleLeft">
+    <div class="bubble-presets">
+      <button type="button" class="preset-btn"
+        (mousedown)="$event.preventDefault(); resizeSelectedImage(0.25)">25%</button>
+      <button type="button" class="preset-btn"
+        (mousedown)="$event.preventDefault(); resizeSelectedImage(0.5)">50%</button>
+      <button type="button" class="preset-btn"
+        (mousedown)="$event.preventDefault(); resizeSelectedImage(0.75)">75%</button>
+      <button type="button" class="preset-btn"
+        (mousedown)="$event.preventDefault(); resizeSelectedImage(1)">100%</button>
     </div>
+    <div class="bubble-custom">
+      <input type="number" class="bubble-input" placeholder="Width" [value]="selectedImageWidth"
+        (input)="onWidthInput($event)">
+      <span class="bubble-x">×</span>
+      <input type="number" class="bubble-input" placeholder="Height" [value]="selectedImageHeight"
+        (input)="onHeightInput($event)">
+      <button type="button" class="bubble-delete-btn" title="Delete Image"
+        (mousedown)="$event.preventDefault(); deleteSelectedImage()">
+        <svg viewBox="0 0 24 24" width="14" height="14">
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor" />
+        </svg>
+      </button>
+    </div>
+  </div>
   }
 
-  <!-- Image Resizer Drag Handle -->
+  <!-- Image Resizer Drag Wrapper -->
   @if (selectedImageEl) {
-    <div class="image-resize-handle" 
-         [style.top.px]="handleTop" 
-         [style.left.px]="handleLeft"
-         (mousedown)="startImageResize($event)">
-    </div>
+  <div class="image-resize-wrapper" [style.top.px]="wrapperTop" [style.left.px]="wrapperLeft"
+    [style.width.px]="wrapperWidth" [style.height.px]="wrapperHeight">
+    <div class="resize-point top-left" (mousedown)="startResize($event, 'top-left')"></div>
+
+    <div class="resize-point top-right" (mousedown)="startResize($event, 'top-right')"></div>
+
+    <div class="resize-point bottom-left" (mousedown)="startResize($event, 'bottom-left')"></div>
+
+    <div class="resize-point bottom-right" (mousedown)="startResize($event, 'bottom-right')"></div>
+  </div>
   }
 
   <div class="editor-footer">
     <div class="editor-status">
       @if (editorService.config().readOnly) {
-        <span class="status-badge readonly-badge">Read Only</span>
+      <span class="status-badge readonly-badge">Read Only</span>
       } @else if (editorService.isLimitReached()) {
-        <span class="status-badge warning-badge">Character Limit Reached</span>
+      <span class="status-badge warning-badge">Character Limit Reached</span>
       }
     </div>
 
     @if (editorService.config().maxLength !== undefined) {
-      <div class="character-count" [class.danger]="editorService.isLimitReached()">
-        {{ editorService.charCount() }} / {{ editorService.config().maxLength }}
-        @if (editorService.remainingChars() !== null) {
-          <span class="remaining-text">({{ editorService.remainingChars() }} left)</span>
-        }
-      </div>
+    <div class="character-count" [class.danger]="editorService.isLimitReached()">
+      {{ editorService.charCount() }} / {{ editorService.config().maxLength }}
+      @if (editorService.remainingChars() !== null) {
+      <span class="remaining-text">({{ editorService.remainingChars() }} left)</span>
+      }
+    </div>
     }
   </div>
 </div>

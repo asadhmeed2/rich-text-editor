@@ -96,11 +96,15 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   selectedImageEl: HTMLImageElement | null = null;
   bubbleTop = 0;
   bubbleLeft = 0;
-  handleTop = 0;
-  handleLeft = 0;
+  wrapperTop = 0;
+  wrapperLeft = 0;
+  wrapperWidth = 0;
+  wrapperHeight = 0;
   isResizing = false;
   private resizeStartMouseX = 0;
+  private resizeStartMouseY = 0;
   private resizeStartWidth = 0;
+  private resizeStartHeight = 0;
   private resizeRatio = 1;
   private resizeMaxWidth = 400;
 
@@ -596,17 +600,22 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     if (this.bubbleLeft < 8) this.bubbleLeft = 8;
     if (this.bubbleLeft > maxLeft) this.bubbleLeft = maxLeft;
 
-    this.handleTop = imgRect.bottom - editorRect.top - 6;
-    this.handleLeft = imgRect.right - editorRect.left - 6;
+    this.wrapperTop = imgRect.top - editorRect.top;
+    this.wrapperLeft = imgRect.left - editorRect.left;
+    this.wrapperWidth = imgRect.width;
+    this.wrapperHeight = imgRect.height;
   }
 
-  startImageResize(event: MouseEvent): void {
+  startResize(event: MouseEvent, direction: string): void {
     if (this.readOnly() || !this.selectedImageEl) return;
     event.preventDefault();
+    event.stopPropagation();
     
     this.isResizing = true;
     this.resizeStartMouseX = event.clientX;
+    this.resizeStartMouseY = event.clientY;
     this.resizeStartWidth = this.selectedImageWidth;
+    this.resizeStartHeight = this.selectedImageHeight;
     this.resizeRatio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
     
     const editorEl = this.editableArea()?.nativeElement;
@@ -615,12 +624,47 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (!this.selectedImageEl) return;
       const deltaX = moveEvent.clientX - this.resizeStartMouseX;
-      let newWidth = this.resizeStartWidth + deltaX;
+      const deltaY = moveEvent.clientY - this.resizeStartMouseY;
       
+      let newWidth = this.resizeStartWidth;
+      let newHeight = this.resizeStartHeight;
+      
+      switch (direction) {
+        case 'middle-left':
+          newWidth = this.resizeStartWidth - deltaX;
+          break;
+        case 'middle-right':
+          newWidth = this.resizeStartWidth + deltaX;
+          break;
+        case 'top-center':
+          newHeight = this.resizeStartHeight - deltaY;
+          break;
+        case 'bottom-center':
+          newHeight = this.resizeStartHeight + deltaY;
+          break;
+        case 'top-left':
+          newWidth = this.resizeStartWidth - deltaX;
+          newHeight = this.resizeStartHeight - deltaY;
+          break;
+        case 'top-right':
+          newWidth = this.resizeStartWidth + deltaX;
+          newHeight = this.resizeStartHeight - deltaY;
+          break;
+        case 'bottom-left':
+          newWidth = this.resizeStartWidth - deltaX;
+          newHeight = this.resizeStartHeight + deltaY;
+          break;
+        case 'bottom-right':
+          newWidth = this.resizeStartWidth + deltaX;
+          newHeight = this.resizeStartHeight + deltaY;
+          break;
+      }
+      
+      // Enforce limits
       if (newWidth < 30) newWidth = 30;
       if (newWidth > this.resizeMaxWidth) newWidth = this.resizeMaxWidth;
       
-      const newHeight = Math.round(newWidth / this.resizeRatio);
+      if (newHeight < 30) newHeight = 30;
       
       this.selectedImageEl.setAttribute('width', Math.round(newWidth).toString());
       this.selectedImageEl.setAttribute('height', Math.round(newHeight).toString());

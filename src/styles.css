@@ -1,6 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'quill/dist/quill.core.css';
 
+.editor-container {
+  position: relative;
+}
+
 .color-picker-container {
   position: relative;
   display: inline-flex;
@@ -245,21 +249,92 @@ img.selected-img-resize {
   background-color: rgba(248, 215, 218, 0.4);
 }
 
-.image-resize-handle {
+.image-resize-wrapper {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  border: 1.5px dashed hsl(220, 90%, 56%);
+  pointer-events: none;
+  z-index: 210;
+  box-sizing: border-box;
+}
+
+.resize-point {
+  position: absolute;
+  width: 10px;
+  height: 10px;
   background-color: hsl(0, 0%, 100%);
   border: 2px solid hsl(220, 90%, 56%);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  cursor: nwse-resize;
-  z-index: 210;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
   box-sizing: border-box;
   transition: transform 0.15s, background-color 0.15s;
 }
 
-.image-resize-handle:hover {
+.resize-point:hover {
   transform: scale(1.3);
   background-color: hsl(220, 90%, 56%);
+}
+
+.resize-point.top-left {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+
+.resize-point.top-center {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.resize-point.top-center:hover {
+  transform: translateX(-50%) scale(1.3);
+}
+
+.resize-point.top-right {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+
+.resize-point.middle-left {
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.resize-point.middle-left:hover {
+  transform: translateY(-50%) scale(1.3);
+}
+
+.resize-point.middle-right {
+  top: 50%;
+  right: -6px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.resize-point.middle-right:hover {
+  transform: translateY(-50%) scale(1.3);
+}
+
+.resize-point.bottom-left {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+
+.resize-point.bottom-center {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.resize-point.bottom-center:hover {
+  transform: translateX(-50%) scale(1.3);
+}
+
+.resize-point.bottom-right {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
 }
