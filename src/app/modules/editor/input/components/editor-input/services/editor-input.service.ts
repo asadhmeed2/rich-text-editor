@@ -181,4 +181,69 @@ export class EditorInputService {
       charCount: 0
     }));
   }
+
+  // Upload an image using configured handler or FileReader fallback
+  uploadImage(file: File): Promise<string> {
+    const handler = this.config().imageUploadHandler;
+    if (handler) {
+      const result = handler(file);
+      return Promise.resolve(result);
+    }
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Calculate scaled dimensions fitting within maxWidth and maxHeight
+  calculateFitDimensions(
+    naturalWidth: number,
+    naturalHeight: number,
+    maxWidth: number,
+    maxHeight: number
+  ): { width: number; height: number } {
+    const ratio = (naturalWidth || 200) / (naturalHeight || 150);
+    let newWidth = maxWidth;
+    let newHeight = maxWidth / ratio;
+
+    if (newHeight > maxHeight) {
+      newHeight = maxHeight;
+      newWidth = maxHeight * ratio;
+    }
+
+    return {
+      width: Math.round(newWidth),
+      height: Math.round(newHeight)
+    };
+  }
+
+  // Calculate proportional height given target width
+  calculateHeightFromWidth(width: number, naturalWidth: number, naturalHeight: number): number {
+    const ratio = (naturalWidth || 200) / (naturalHeight || 150);
+    return Math.round(width / ratio);
+  }
+
+  // Calculate proportional width given target height
+  calculateWidthFromHeight(height: number, naturalWidth: number, naturalHeight: number): number {
+    const ratio = (naturalWidth || 200) / (naturalHeight || 150);
+    return Math.round(height * ratio);
+  }
+
+  // Calculate scaled dimensions based on a percentage scale of editor width
+  calculateScaledDimensions(
+    scale: number,
+    naturalWidth: number,
+    naturalHeight: number,
+    editorWidth: number
+  ): { width: number; height: number } {
+    const ratio = (naturalWidth || 200) / (naturalHeight || 150);
+    const targetWidth = editorWidth * scale;
+    const targetHeight = targetWidth / ratio;
+    return {
+      width: Math.round(targetWidth),
+      height: Math.round(targetHeight)
+    };
+  }
 }

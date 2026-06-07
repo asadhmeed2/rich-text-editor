@@ -464,14 +464,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     this.insertPlaceholder(index, placeholderId);
 
     try {
-      let imageSrc = '';
-      const handler = this.imageUploadHandler() || this.editorService.config().imageUploadHandler;
-
-      if (handler) {
-        imageSrc = await handler(file);
-      } else {
-        imageSrc = await this.readFileAsDataURL(file);
-      }
+      const imageSrc = await this.editorService.uploadImage(file);
 
       if (imageSrc) {
         this.replacePlaceholderWithImage(placeholderId, imageSrc);
@@ -482,15 +475,6 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       console.error('Failed to process image:', error);
       this.removePlaceholder(placeholderId);
     }
-  }
-
-  private readFileAsDataURL(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
   }
 
   private getInsertionIndex(): number {
@@ -531,20 +515,12 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       const originalWidth = img.naturalWidth || 200;
       const originalHeight = img.naturalHeight || 150;
 
-      const ratio = originalWidth / originalHeight;
-      const maxWidth = editorWidth;
-      const maxHeight = editorHeight;
-
-      let newWidth = maxWidth;
-      let newHeight = maxWidth / ratio;
-
-      if (newHeight > maxHeight) {
-        newHeight = maxHeight;
-        newWidth = maxHeight * ratio;
-      }
-
-      const finalWidth = Math.round(newWidth);
-      const finalHeight = Math.round(newHeight);
+      const { width: finalWidth, height: finalHeight } = this.editorService.calculateFitDimensions(
+        originalWidth,
+        originalHeight,
+        editorWidth,
+        editorHeight
+      );
 
       imgNode.setAttribute('src', src);
       imgNode.setAttribute('width', finalWidth.toString());
@@ -699,8 +675,11 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     const input = event.target as HTMLInputElement;
     const width = parseInt(input.value, 10);
     if (this.selectedImageEl && width > 0) {
-      const ratio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
-      const height = Math.round(width / ratio);
+      const height = this.editorService.calculateHeightFromWidth(
+        width,
+        this.selectedImageEl.naturalWidth || 200,
+        this.selectedImageEl.naturalHeight || 150
+      );
       this.selectedImageEl.setAttribute('width', width.toString());
       this.selectedImageEl.setAttribute('height', height.toString());
       this.quill!.update();
@@ -712,8 +691,11 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     const input = event.target as HTMLInputElement;
     const height = parseInt(input.value, 10);
     if (this.selectedImageEl && height > 0) {
-      const ratio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
-      const width = Math.round(height * ratio);
+      const width = this.editorService.calculateWidthFromHeight(
+        height,
+        this.selectedImageEl.naturalWidth || 200,
+        this.selectedImageEl.naturalHeight || 150
+      );
       this.selectedImageEl.setAttribute('width', width.toString());
       this.selectedImageEl.setAttribute('height', height.toString());
       this.quill!.update();
@@ -728,15 +710,16 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     if (!editorEl) return;
     
     const editorWidth = editorEl.clientWidth || 400;
-    const originalWidth = this.selectedImageEl.naturalWidth || 200;
-    const originalHeight = this.selectedImageEl.naturalHeight || 150;
-    const ratio = originalWidth / originalHeight;
     
-    const targetWidth = editorWidth * scale;
-    const targetHeight = targetWidth / ratio;
+    const { width: targetWidth, height: targetHeight } = this.editorService.calculateScaledDimensions(
+      scale,
+      this.selectedImageEl.naturalWidth || 200,
+      this.selectedImageEl.naturalHeight || 150,
+      editorWidth
+    );
     
-    this.selectedImageEl.setAttribute('width', Math.round(targetWidth).toString());
-    this.selectedImageEl.setAttribute('height', Math.round(targetHeight).toString());
+    this.selectedImageEl.setAttribute('width', targetWidth.toString());
+    this.selectedImageEl.setAttribute('height', targetHeight.toString());
     this.quill!.update();
     this.repositionBubble();
   }

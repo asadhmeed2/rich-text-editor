@@ -215,4 +215,51 @@ describe('EditorInputService', () => {
       });
     });
   });
+
+  describe('image utilities and helpers', () => {
+    it('should use custom imageUploadHandler if registered', async () => {
+      const mockFile = new File([''], 'test.png', { type: 'image/png' });
+      const mockUrl = 'https://example.com/uploaded.png';
+      service.updateConfig({
+        imageUploadHandler: (file: File) => Promise.resolve(mockUrl)
+      });
+      const result = await service.uploadImage(mockFile);
+      expect(result).toBe(mockUrl);
+    });
+
+    it('should fall back to reading as Data URL if no handler registered', async () => {
+      const mockFile = new File(['hello'], 'test.txt', { type: 'text/plain' });
+      const result = await service.uploadImage(mockFile);
+      expect(result).toContain('data:text/plain;base64,');
+    });
+
+    it('should calculate fit dimensions correctly within bounding box', () => {
+      // 4:3 image fit in 800x600 -> should be 800x600
+      let dims = service.calculateFitDimensions(400, 300, 800, 600);
+      expect(dims).toEqual({ width: 800, height: 600 });
+
+      // 4:3 image fit in 400x600 -> height would be 300, width 400
+      dims = service.calculateFitDimensions(400, 300, 400, 600);
+      expect(dims).toEqual({ width: 400, height: 300 });
+
+      // 4:3 image fit in 800x300 -> height 300, width 400
+      dims = service.calculateFitDimensions(400, 300, 800, 300);
+      expect(dims).toEqual({ width: 400, height: 300 });
+    });
+
+    it('should calculate height from width proportionally', () => {
+      const height = service.calculateHeightFromWidth(200, 400, 300);
+      expect(height).toBe(150);
+    });
+
+    it('should calculate width from height proportionally', () => {
+      const width = service.calculateWidthFromHeight(150, 400, 300);
+      expect(width).toBe(200);
+    });
+
+    it('should calculate scaled dimensions relative to editor width', () => {
+      const dims = service.calculateScaledDimensions(0.5, 400, 300, 600);
+      expect(dims).toEqual({ width: 300, height: 225 });
+    });
+  });
 });
