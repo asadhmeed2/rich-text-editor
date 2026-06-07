@@ -15,6 +15,8 @@ import { EditorInputService } from './services/editor-input.service';
 import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.types';
 import Quill from 'quill';
 
+import { TooltipComponent } from '../tooltip';
+
 // Override default block format to 'div' instead of 'p' to align perfectly with service expectations and tests
 const Block = Quill.import('blots/block') as any;
 class DivBlock extends Block {
@@ -52,7 +54,7 @@ Quill.register(CustomImageBlot, true);
 @Component({
   selector: 'app-editor-input',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TooltipComponent],
   templateUrl: './editor-input.component.html',
   styleUrl: './editor-input.component.scss',
   providers: [
