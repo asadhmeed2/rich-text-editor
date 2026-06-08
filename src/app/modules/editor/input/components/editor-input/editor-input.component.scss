@@ -228,6 +228,87 @@ $readonly-bg: hsl(210, 14%, 96%);
   min-width: 140px;
 }
 
+.link-menu-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.link-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  width: 240px;
+}
+
+.link-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.link-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: hsl(210, 24%, 30%);
+}
+
+.link-text-input,
+.link-url-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1px solid hsl(210, 14%, 89%);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: hsl(220, 90%, 56%);
+  }
+}
+
+.link-action-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.link-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &.cancel-btn {
+    background-color: transparent;
+    color: hsl(210, 10%, 60%);
+
+    &:hover {
+      background-color: rgba(210, 210, 210, 0.1);
+    }
+  }
+
+  &.confirm-btn {
+    background-color: hsl(220, 90%, 56%);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: hsl(220, 90%, 50%);
+    }
+
+    &:disabled {
+      background-color: rgba(54, 116, 230, 0.4);
+      cursor: not-allowed;
+    }
+  }
+}
+
 // Show tooltip on hover, but not when button is active (dropdown open)
 .toolbar-btn:hover:not(.active) {
   app-tooltip {

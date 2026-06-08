@@ -93,6 +93,11 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
 
   isColorPickerOpen = false;
   isImageMenuOpen = false;
+  isLinkMenuOpen = false;
+  linkUrlInput = '';
+  linkTextInput = '';
+  hasSelectionForLink = false;
+  private savedSelectionRange: { index: number; length: number } | null = null;
   imageMenuMode: 'select' | 'url' = 'select';
   imageUrlInput = '';
   selectedImageEl: HTMLImageElement | null = null;
@@ -395,6 +400,11 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       this.imageMenuMode = 'select';
       this.imageUrlInput = '';
     }
+    if (!target.closest('.link-menu-container')) {
+      this.isLinkMenuOpen = false;
+      this.linkUrlInput = '';
+      this.linkTextInput = '';
+    }
     if (!target.closest('.image-resize-bubble') && target.tagName !== 'IMG') {
       this.clearImageSelection();
     }
@@ -413,6 +423,52 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       this.imageMenuMode = 'select';
       this.imageUrlInput = '';
     }
+  }
+
+  toggleLinkMenu(): void {
+    if (this.readOnly()) return;
+    this.isLinkMenuOpen = !this.isLinkMenuOpen;
+    if (this.isLinkMenuOpen) {
+      const range = this.quill?.getSelection();
+      this.savedSelectionRange = range || null;
+      if (range && range.length > 0) {
+        this.hasSelectionForLink = true;
+        this.linkTextInput = this.quill!.getText(range.index, range.length);
+      } else {
+        this.hasSelectionForLink = false;
+        this.linkTextInput = '';
+      }
+      this.linkUrlInput = '';
+      // Focus the link URL input
+      setTimeout(() => {
+        const inputEl = this.elementRef.nativeElement.querySelector('.link-url-input');
+        if (inputEl) {
+          inputEl.focus();
+        }
+      });
+    }
+  }
+
+  insertLink(): void {
+    if (!this.quill || !this.linkUrlInput || !this.linkUrlInput.trim()) return;
+    const url = this.linkUrlInput.trim();
+    const text = this.linkTextInput.trim();
+
+    this.quill.focus();
+
+    if (this.hasSelectionForLink && this.savedSelectionRange) {
+      this.quill.setSelection(this.savedSelectionRange.index, this.savedSelectionRange.length);
+      this.quill.format('link', url);
+    } else {
+      const index = this.savedSelectionRange ? this.savedSelectionRange.index : this.quill.getLength();
+      const linkText = text || url;
+      this.quill.insertText(index, linkText, 'link', url);
+      this.quill.setSelection(index + linkText.length);
+    }
+
+    this.isLinkMenuOpen = false;
+    this.linkUrlInput = '';
+    this.linkTextInput = '';
   }
 
   setImageMenuMode(mode: 'select' | 'url'): void {

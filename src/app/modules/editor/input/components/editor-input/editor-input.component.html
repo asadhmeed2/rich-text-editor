@@ -88,6 +88,38 @@
       <app-tooltip title="Numbered List" desc="Insert a numbered list"></app-tooltip>
     </button>
 
+    <!-- Insert Link Menu -->
+    <div class="link-menu-container">
+      <button class="toolbar-btn" [class.active]="isLinkMenuOpen"
+        (mousedown)="$event.preventDefault(); toggleLinkMenu()">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path
+            d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+            fill="currentColor" />
+        </svg>
+        <app-tooltip title="Insert Link" desc="Add hyperlink to selected text"></app-tooltip>
+      </button>
+
+      @if (isLinkMenuOpen) {
+      <div class="editor-dropdown link-dropdown" (mousedown)="$event.preventDefault()">
+        <div class="link-input-group">
+          <label class="link-input-label">Text to display</label>
+          <input type="text" class="link-text-input" placeholder="Link text" [(ngModel)]="linkTextInput">
+        </div>
+        <div class="link-input-group">
+          <label class="link-input-label">Link URL</label>
+          <input type="text" class="link-url-input" placeholder="https://example.com" [(ngModel)]="linkUrlInput"
+            (keydown.enter)="insertLink()" (keydown.escape)="isLinkMenuOpen = false">
+        </div>
+        <div class="link-action-btns">
+          <button class="link-btn cancel-btn" (click)="isLinkMenuOpen = false">Cancel</button>
+          <button class="link-btn confirm-btn" (click)="insertLink()"
+            [disabled]="!linkUrlInput.trim()">Insert</button>
+        </div>
+      </div>
+      }
+    </div>
+
     <!-- Insert Image Menu -->
     <div class="image-menu-container">
       <button class="toolbar-btn" [class.active]="isImageMenuOpen"

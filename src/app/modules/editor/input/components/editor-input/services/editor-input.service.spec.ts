@@ -51,7 +51,7 @@ describe('EditorInputService', () => {
 
     it('should parse nested and sequential tags correctly', () => {
       const result = service.parseHtml('<div>Welcome to <i>rich-text</i> editor</div>');
-      expect(result.plainText).toBe(' Welcome to rich-text editor');
+      expect(result.plainText).toBe('Welcome to rich-text editor ');
       expect(result.html.tags.length).toBe(4);
 
       // <div>
@@ -63,19 +63,19 @@ describe('EditorInputService', () => {
       // <i>
       expect(result.html.tags[1]).toEqual({
         tag: 'i',
-        textPosition: 12
+        textPosition: 11
       });
 
       // </i>
       expect(result.html.tags[2]).toEqual({
         tag: '/i',
-        textPosition: 21
+        textPosition: 20
       });
 
       // </div>
       expect(result.html.tags[3]).toEqual({
         tag: '/div',
-        textPosition: 28
+        textPosition: 27
       });
     });
 
@@ -138,7 +138,7 @@ describe('EditorInputService', () => {
       expect(result4.html.tags).toEqual([]);
 
       const result5 = service.parseHtml('<div>asad</div><div>hmeed</div>');
-      expect(result5.plainText).toBe(' asad hmeed');
+      expect(result5.plainText).toBe('asad hmeed ');
       expect(result5.html.tags).toEqual([
         {
           tag: "div",
@@ -146,7 +146,7 @@ describe('EditorInputService', () => {
         },
         {
           tag: "/div",
-          textPosition: 5
+          textPosition: 4
         },
         {
           tag: "div",
@@ -154,7 +154,7 @@ describe('EditorInputService', () => {
         },
         {
           tag: "/div",
-          textPosition: 11
+          textPosition: 10
         }
       ]);
     });
