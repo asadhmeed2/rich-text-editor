@@ -410,6 +410,13 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     }
   }
 
+  onDropdownMousedown(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+      event.preventDefault();
+    }
+  }
+
   onWindowResize(): void {
     if (this.selectedImageEl) {
       this.repositionBubble();
@@ -457,8 +464,16 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     this.quill.focus();
 
     if (this.hasSelectionForLink && this.savedSelectionRange) {
-      this.quill.setSelection(this.savedSelectionRange.index, this.savedSelectionRange.length);
-      this.quill.format('link', url);
+      const originalText = this.quill.getText(this.savedSelectionRange.index, this.savedSelectionRange.length);
+      const newText = text || url;
+      if (newText !== originalText) {
+        this.quill.deleteText(this.savedSelectionRange.index, this.savedSelectionRange.length);
+        this.quill.insertText(this.savedSelectionRange.index, newText, 'link', url);
+        this.quill.setSelection(this.savedSelectionRange.index + newText.length);
+      } else {
+        this.quill.setSelection(this.savedSelectionRange.index, this.savedSelectionRange.length);
+        this.quill.format('link', url);
+      }
     } else {
       const index = this.savedSelectionRange ? this.savedSelectionRange.index : this.quill.getLength();
       const linkText = text || url;

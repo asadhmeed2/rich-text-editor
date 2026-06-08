@@ -101,7 +101,7 @@
       </button>
 
       @if (isLinkMenuOpen) {
-      <div class="editor-dropdown link-dropdown" (mousedown)="$event.preventDefault()">
+      <div class="editor-dropdown link-dropdown" (mousedown)="onDropdownMousedown($event)">
         <div class="link-input-group">
           <label class="link-input-label">Text to display</label>
           <input type="text" class="link-text-input" placeholder="Link text" [(ngModel)]="linkTextInput">
@@ -133,7 +133,7 @@
       </button>
 
       @if (isImageMenuOpen) {
-      <div class="editor-dropdown image-dropdown" (mousedown)="$event.preventDefault()">
+      <div class="editor-dropdown image-dropdown" (mousedown)="onDropdownMousedown($event)">
         @if (imageMenuMode === 'select') {
         <button class="editor-dropdown-btn" (click)="selectImageFromDisk()">
           <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
