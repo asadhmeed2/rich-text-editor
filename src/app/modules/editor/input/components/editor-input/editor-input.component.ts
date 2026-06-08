@@ -97,6 +97,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   linkUrlInput = '';
   linkTextInput = '';
   hasSelectionForLink = false;
+  hasExistingLink = false;
   private savedSelectionRange: { index: number; length: number } | null = null;
   imageMenuMode: 'select' | 'url' = 'select';
   imageUrlInput = '';
@@ -438,6 +439,17 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     if (this.isLinkMenuOpen) {
       const range = this.quill?.getSelection();
       this.savedSelectionRange = range || null;
+
+      let existingUrl = '';
+      if (range) {
+        const formats: any = this.quill!.getFormat(range);
+        existingUrl = formats['link'] || '';
+      } else if (this.quill) {
+        const formats: any = this.quill.getFormat();
+        existingUrl = formats['link'] || '';
+      }
+      this.hasExistingLink = !!existingUrl;
+
       if (range && range.length > 0) {
         this.hasSelectionForLink = true;
         this.linkTextInput = this.quill!.getText(range.index, range.length);
@@ -445,7 +457,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         this.hasSelectionForLink = false;
         this.linkTextInput = '';
       }
-      this.linkUrlInput = '';
+      this.linkUrlInput = existingUrl;
       // Focus the link URL input
       setTimeout(() => {
         const inputEl = this.elementRef.nativeElement.querySelector('.link-url-input');
@@ -484,6 +496,25 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     this.isLinkMenuOpen = false;
     this.linkUrlInput = '';
     this.linkTextInput = '';
+    this.hasExistingLink = false;
+  }
+
+  removeLink(): void {
+    if (!this.quill) return;
+
+    this.quill.focus();
+
+    if (this.savedSelectionRange) {
+      this.quill.setSelection(this.savedSelectionRange.index, this.savedSelectionRange.length);
+      this.quill.format('link', false);
+    } else {
+      this.quill.format('link', false);
+    }
+
+    this.isLinkMenuOpen = false;
+    this.linkUrlInput = '';
+    this.linkTextInput = '';
+    this.hasExistingLink = false;
   }
 
   setImageMenuMode(mode: 'select' | 'url'): void {

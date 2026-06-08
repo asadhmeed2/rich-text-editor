@@ -294,6 +294,15 @@ $readonly-bg: hsl(210, 14%, 96%);
     }
   }
 
+  &.remove-btn {
+    background-color: transparent;
+    color: $danger-color;
+
+    &:hover {
+      background-color: rgba($danger-color, 0.08);
+    }
+  }
+
   &.confirm-btn {
     background-color: hsl(220, 90%, 56%);
     color: white;

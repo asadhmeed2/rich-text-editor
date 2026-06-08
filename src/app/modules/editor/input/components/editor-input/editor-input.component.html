@@ -112,6 +112,9 @@
             (keydown.enter)="insertLink()" (keydown.escape)="isLinkMenuOpen = false">
         </div>
         <div class="link-action-btns">
+          @if (hasExistingLink) {
+          <button class="link-btn remove-btn" (click)="removeLink()">Remove</button>
+          }
           <button class="link-btn cancel-btn" (click)="isLinkMenuOpen = false">Cancel</button>
           <button class="link-btn confirm-btn" (click)="insertLink()"
             [disabled]="!linkUrlInput.trim()">Insert</button>
