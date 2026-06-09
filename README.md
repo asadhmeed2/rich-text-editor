@@ -32,6 +32,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
     19. the editor should support text font.
     20. the editor should support text size.
 
+I have checked witch technologies that is the standard in the industry to update the html dome and chose quill.js as the best option for this project.
+
 ### after that i started thinking about the best way to implement this i come to conclusion that all of this is overkill and implementing the function that convert the html to plain text is enough to solve the issue while preserving the html tags in an object with the tag name and position in the original text and the plain text but i will create the editor for fun.
 
 
