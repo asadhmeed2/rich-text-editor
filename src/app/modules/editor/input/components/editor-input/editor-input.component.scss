@@ -91,6 +91,10 @@ $readonly-bg: hsl(210, 14%, 96%);
     transform: scale(0.95);
     background-color: rgba($primary-color, 0.15);
   }
+
+  .material-icons {
+    font-size: 18px;
+  }
 }
 
 .toolbar-separator {

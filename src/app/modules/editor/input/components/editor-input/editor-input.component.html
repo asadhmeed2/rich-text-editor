@@ -5,35 +5,25 @@
   <div class="editor-toolbar">
     <!-- Bold -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('bold')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path
-          d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5Zm0 7h5.5a2.5 2.5 0 1 0 0-5H8v5ZM6 4h6.5a4.5 4.5 0 0 1 0 9H6V4Zm0 9h7.5a4.5 4.5 0 0 1 0 9H6v-9Z"
-          fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_bold</span>
       <app-tooltip title="Bold" desc="Format selected text as bold (Ctrl+B)"></app-tooltip>
     </button>
 
     <!-- Italic -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('italic')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path d="M10 5h8v2h-3l-3.99 10H14v2H6v-2h3l3.99-10H10V5Z" fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_italic</span>
       <app-tooltip title="Italic" desc="Format selected text as italic (Ctrl+I)"></app-tooltip>
     </button>
 
     <!-- Underline -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('underline')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path d="M8 3v9a4 4 0 1 0 8 0V3h2v9a6 6 0 1 1-12 0V3h2ZM4 20h16v2H4v-2Z" fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_underlined</span>
       <app-tooltip title="Underline" desc="Underline selected text (Ctrl+U)"></app-tooltip>
     </button>
 
     <!-- Strikethrough -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('strikeThrough')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path d="M10 19h4v-3h-4v3ZM5 4h14v3h-5v3h-4V7H5V4Zm-1 7h16v2H4v-2Z" fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_strikethrough</span>
       <app-tooltip title="Strikethrough" desc="Strike through selected text"></app-tooltip>
     </button>
 
@@ -41,11 +31,7 @@
     <div class="color-picker-container">
       <button class="toolbar-btn" [class.active]="isColorPickerOpen"
         (mousedown)="$event.preventDefault(); toggleColorPicker()">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            d="M15.24 6.64l-2.88-2.88c-.39-.39-1.02-.39-1.41 0L3.56 11.15c-.39.39-.39 1.02 0 1.41l2.88 2.88c.2.2.45.29.71.29.26 0 .51-.1.71-.29l7.38-7.39c.39-.39.39-1.03 0-1.41zm-6.28 7.37L6.08 11.1l5.24-5.24 2.88 2.88-5.24 5.27zm10.79.49h-3.47l-1.5 1.5h4.97c.55 0 1-.45 1-1s-.45-1-1-1zM3 18h18v2H3v-2z"
-            fill="currentColor" />
-        </svg>
+        <span class="material-icons">format_color_fill</span>
         <app-tooltip title="Highlight Color" desc="Highlight selected text background"></app-tooltip>
       </button>
 
@@ -70,21 +56,13 @@
 
     <!-- Unordered List -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('insertUnorderedList')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path
-          d="M4 10.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm0-12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z"
-          fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_list_bulleted</span>
       <app-tooltip title="Bullet List" desc="Insert a bulleted list"></app-tooltip>
     </button>
 
     <!-- Ordered List -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('insertOrderedList')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path
-          d="M2 3.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM9 4h11v2H9V4Zm0 6h11v2H9v-2Zm0 6h11v2H9v-2Z"
-          fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_list_numbered</span>
       <app-tooltip title="Numbered List" desc="Insert a numbered list"></app-tooltip>
     </button>
 
@@ -92,11 +70,7 @@
     <div class="link-menu-container">
       <button class="toolbar-btn" [class.active]="isLinkMenuOpen"
         (mousedown)="$event.preventDefault(); toggleLinkMenu()">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
-            fill="currentColor" />
-        </svg>
+        <span class="material-icons">link</span>
         <app-tooltip title="Insert Link" desc="Add hyperlink to selected text"></app-tooltip>
       </button>
 
@@ -127,11 +101,7 @@
     <div class="image-menu-container">
       <button class="toolbar-btn" [class.active]="isImageMenuOpen"
         (mousedown)="$event.preventDefault(); toggleImageMenu()">
-        <svg viewBox="0 0 24 24" width="16" height="16">
-          <path
-            d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
-            fill="currentColor" />
-        </svg>
+        <span class="material-icons">image</span>
         <app-tooltip title="Insert Image" desc="Insert image from disk or URL"></app-tooltip>
       </button>
 
@@ -139,19 +109,11 @@
       <div class="editor-dropdown image-dropdown" (mousedown)="onDropdownMousedown($event)">
         @if (imageMenuMode === 'select') {
         <button class="editor-dropdown-btn" (click)="selectImageFromDisk()">
-          <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
-            <path
-              d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
-              fill="currentColor" />
-          </svg>
+          <span class="material-icons" style="margin-right: 6px; font-size: 16px;">upload_file</span>
           From Disk
         </button>
         <button class="editor-dropdown-btn" (click)="setImageMenuMode('url')">
-          <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 6px;">
-            <path
-              d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
-              fill="currentColor" />
-          </svg>
+          <span class="material-icons" style="margin-right: 6px; font-size: 16px;">link</span>
           From URL
         </button>
         } @else if (imageMenuMode === 'url') {
@@ -174,11 +136,7 @@
 
     <!-- Clear Formatting -->
     <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('removeFormat')">
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <path
-          d="M14.12 10.47 12 12.59l-2.12-2.12-1.41 1.41L10.59 14l-2.12 2.12 1.41 1.41L12 15.41l2.12 2.12 1.41-1.41L13.41 14l2.12-2.12-1.41-1.41ZM5 4h14v3h-5v3h-4V7H5V4Zm0 13h14v2H5v-2Z"
-          fill="currentColor" />
-      </svg>
+      <span class="material-icons">format_clear</span>
       <app-tooltip title="Clear Formatting" desc="Clear all styling from selection"></app-tooltip>
     </button>
   </div>
