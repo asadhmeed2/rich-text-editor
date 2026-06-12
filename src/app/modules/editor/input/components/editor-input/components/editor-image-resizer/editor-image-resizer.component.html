@@ -1,0 +1,33 @@
+<!-- Image Resizer Float Bubble -->
+<div class="image-resize-bubble" [style.top.px]="bubbleTop()" [style.left.px]="bubbleLeft()">
+  <div class="bubble-presets">
+    <button type="button" class="preset-btn"
+      (mousedown)="$event.preventDefault(); selectPreset(0.25)">25%</button>
+    <button type="button" class="preset-btn"
+      (mousedown)="$event.preventDefault(); selectPreset(0.5)">50%</button>
+    <button type="button" class="preset-btn"
+      (mousedown)="$event.preventDefault(); selectPreset(0.75)">75%</button>
+    <button type="button" class="preset-btn"
+      (mousedown)="$event.preventDefault(); selectPreset(1)">100%</button>
+  </div>
+  <div class="bubble-custom">
+    <input type="number" class="bubble-input" placeholder="Width" [value]="selectedImageWidth()"
+      (input)="onWidthInput($event)">
+    <span class="bubble-x">×</span>
+    <input type="number" class="bubble-input" placeholder="Height" [value]="selectedImageHeight()"
+      (input)="onHeightInput($event)">
+    <button type="button" class="bubble-delete-btn" title="Delete Image"
+      (mousedown)="$event.preventDefault(); onDelete()">
+      <span class="material-icons" style="font-size: 16px;">delete</span>
+    </button>
+  </div>
+</div>
+
+<!-- Image Resizer Drag Wrapper -->
+<div class="image-resize-wrapper" [style.top.px]="wrapperTop()" [style.left.px]="wrapperLeft()"
+  [style.width.px]="wrapperWidth()" [style.height.px]="wrapperHeight()">
+  <div class="resize-point top-left" (mousedown)="startResize($event, 'top-left')"></div>
+  <div class="resize-point top-right" (mousedown)="startResize($event, 'top-right')"></div>
+  <div class="resize-point bottom-left" (mousedown)="startResize($event, 'bottom-left')"></div>
+  <div class="resize-point bottom-right" (mousedown)="startResize($event, 'bottom-right')"></div>
+</div>

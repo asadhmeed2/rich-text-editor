@@ -2,219 +2,50 @@
   [class.limit-reached]="editorService.isLimitReached()" [class.readonly]="editorService.config().readOnly">
 
   @if (!editorService.config().readOnly) {
-  <div class="editor-toolbar">
-    <!-- Bold -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('bold')">
-      <span class="material-icons">format_bold</span>
-      <app-tooltip title="Bold" desc="Format selected text as bold (Ctrl+B)"></app-tooltip>
-    </button>
-
-    <!-- Italic -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('italic')">
-      <span class="material-icons">format_italic</span>
-      <app-tooltip title="Italic" desc="Format selected text as italic (Ctrl+I)"></app-tooltip>
-    </button>
-
-    <!-- Underline -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('underline')">
-      <span class="material-icons">format_underlined</span>
-      <app-tooltip title="Underline" desc="Underline selected text (Ctrl+U)"></app-tooltip>
-    </button>
-
-    <!-- Strikethrough -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('strikeThrough')">
-      <span class="material-icons">format_strikethrough</span>
-      <app-tooltip title="Strikethrough" desc="Strike through selected text"></app-tooltip>
-    </button>
-
-    <!-- Highlight Background Color -->
-    <div class="color-picker-container">
-      <button class="toolbar-btn" [class.active]="isColorPickerOpen"
-        (mousedown)="$event.preventDefault(); toggleColorPicker()">
-        <span class="material-icons">format_color_fill</span>
-        <app-tooltip title="Highlight Color" desc="Highlight selected text background"></app-tooltip>
-      </button>
-
-      @if (isColorPickerOpen) {
-      <div class="editor-dropdown color-dropdown" (mousedown)="$event.preventDefault()">
-        @for (color of highlightColors; track color.value) {
-        <button class="color-swatch" [style.background-color]="color.value" [title]="color.name"
-          (mousedown)="$event.preventDefault(); selectHighlightColor(color.value)">
-        </button>
-        }
-        <button class="color-swatch clear-swatch" title="No Highlight"
-          (mousedown)="$event.preventDefault(); selectHighlightColor(false)">
-          <svg viewBox="0 0 24 24" width="12" height="12">
-            <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2" />
-          </svg>
-        </button>
-      </div>
-      }
-    </div>
-
-    <div class="toolbar-separator"></div>
-
-    <!-- Unordered List -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('insertUnorderedList')">
-      <span class="material-icons">format_list_bulleted</span>
-      <app-tooltip title="Bullet List" desc="Insert a bulleted list"></app-tooltip>
-    </button>
-
-    <!-- Ordered List -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('insertOrderedList')">
-      <span class="material-icons">format_list_numbered</span>
-      <app-tooltip title="Numbered List" desc="Insert a numbered list"></app-tooltip>
-    </button>
-
-    <!-- Insert Link Menu -->
-    <div class="link-menu-container">
-      <button class="toolbar-btn" [class.active]="isLinkMenuOpen"
-        (mousedown)="$event.preventDefault(); toggleLinkMenu()">
-        <span class="material-icons">link</span>
-        <app-tooltip title="Insert Link" desc="Add hyperlink to selected text"></app-tooltip>
-      </button>
-
-      @if (isLinkMenuOpen) {
-      <div class="editor-dropdown link-dropdown" (mousedown)="onDropdownMousedown($event)">
-        <div class="link-input-group">
-          <label class="link-input-label">Text to display</label>
-          <input type="text" class="link-text-input" placeholder="Link text" [(ngModel)]="linkTextInput">
-        </div>
-        <div class="link-input-group">
-          <label class="link-input-label">Link URL</label>
-          <input type="text" class="link-url-input" placeholder="https://example.com" [(ngModel)]="linkUrlInput"
-            (keydown.enter)="insertLink()" (keydown.escape)="isLinkMenuOpen = false">
-        </div>
-        <div class="link-action-btns">
-          @if (hasExistingLink) {
-          <button class="link-btn remove-btn" (click)="removeLink()">Remove</button>
-          }
-          <button class="link-btn cancel-btn" (click)="isLinkMenuOpen = false">Cancel</button>
-          <button class="link-btn confirm-btn" (click)="insertLink()"
-            [disabled]="!linkUrlInput.trim()">Insert</button>
-        </div>
-      </div>
-      }
-    </div>
-
-    <!-- Insert Image Menu -->
-    <div class="image-menu-container">
-      <button class="toolbar-btn" [class.active]="isImageMenuOpen"
-        (mousedown)="$event.preventDefault(); toggleImageMenu()">
-        <span class="material-icons">image</span>
-        <app-tooltip title="Insert Image" desc="Insert image from disk or URL"></app-tooltip>
-      </button>
-
-      @if (isImageMenuOpen) {
-      <div class="editor-dropdown image-dropdown" (mousedown)="onDropdownMousedown($event)">
-        @if (imageMenuMode === 'select') {
-        <button class="editor-dropdown-btn" (click)="selectImageFromDisk()">
-          <span class="material-icons" style="margin-right: 6px; font-size: 16px;">upload_file</span>
-          From Disk
-        </button>
-        <button class="editor-dropdown-btn" (click)="setImageMenuMode('url')">
-          <span class="material-icons" style="margin-right: 6px; font-size: 16px;">link</span>
-          From URL
-        </button>
-        } @else if (imageMenuMode === 'url') {
-        <div class="url-input-container">
-          <input type="text" class="image-url-input" placeholder="Enter image URL..." [(ngModel)]="imageUrlInput"
-            (keydown.enter)="insertImageFromUrl()" (keydown.escape)="setImageMenuMode('select')">
-          <div class="url-action-btns">
-            <button class="url-btn cancel-btn" (click)="setImageMenuMode('select')">Cancel</button>
-            <button class="url-btn confirm-btn" (click)="insertImageFromUrl()"
-              [disabled]="!imageUrlInput.trim()">Insert</button>
-          </div>
-        </div>
-        }
-      </div>
-      }
-    </div>
-    <input type="file" #imageInput style="display: none;" accept="image/*" (change)="onImageSelected($event)">
-
-    <div class="toolbar-separator"></div>
-
-    <!-- Clear Formatting -->
-    <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('removeFormat')">
-      <span class="material-icons">format_clear</span>
-      <app-tooltip title="Clear Formatting" desc="Clear all styling from selection"></app-tooltip>
-    </button>
-  </div>
+  <app-editor-toolbar
+    [readOnly]="!!editorService.config().readOnly"
+    [selectionText]="selectionText"
+    [existingLinkUrl]="existingLinkUrl"
+    (format)="handleFormat($event)"
+    (linkInsert)="handleLinkInsert($event)"
+    (linkRemove)="handleLinkRemove()"
+    (imageInsertUrl)="handleImageInsertUrl($event)"
+    (imageSelectDisk)="handleImageSelectDisk()"
+    (linkMenuOpened)="handleLinkMenuOpened()">
+  </app-editor-toolbar>
   }
+  
+  <input type="file" #imageInput style="display: none;" accept="image/*" (change)="onImageSelected($event)">
 
   <div #editableArea class="editor-textarea"></div>
 
-  <!-- Image Resizer Float Bubble -->
+  <!-- Image Resizer -->
   @if (selectedImageEl) {
-  <div class="image-resize-bubble" [style.top.px]="bubbleTop" [style.left.px]="bubbleLeft">
-    <div class="bubble-presets">
-      <button type="button" class="preset-btn"
-        (mousedown)="$event.preventDefault(); resizeSelectedImage(0.25)">25%</button>
-      <button type="button" class="preset-btn"
-        (mousedown)="$event.preventDefault(); resizeSelectedImage(0.5)">50%</button>
-      <button type="button" class="preset-btn"
-        (mousedown)="$event.preventDefault(); resizeSelectedImage(0.75)">75%</button>
-      <button type="button" class="preset-btn"
-        (mousedown)="$event.preventDefault(); resizeSelectedImage(1)">100%</button>
-    </div>
-    <div class="bubble-custom">
-      <input type="number" class="bubble-input" placeholder="Width" [value]="selectedImageWidth"
-        (input)="onWidthInput($event)">
-      <span class="bubble-x">×</span>
-      <input type="number" class="bubble-input" placeholder="Height" [value]="selectedImageHeight"
-        (input)="onHeightInput($event)">
-      <button type="button" class="bubble-delete-btn" title="Delete Image"
-        (mousedown)="$event.preventDefault(); deleteSelectedImage()">
-        <svg viewBox="0 0 24 24" width="14" height="14">
-          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor" />
-        </svg>
-      </button>
-    </div>
-  </div>
+  <app-editor-image-resizer
+    [selectedImageWidth]="selectedImageWidth"
+    [selectedImageHeight]="selectedImageHeight"
+    [bubbleTop]="bubbleTop"
+    [bubbleLeft]="bubbleLeft"
+    [wrapperTop]="wrapperTop"
+    [wrapperLeft]="wrapperLeft"
+    [wrapperWidth]="wrapperWidth"
+    [wrapperHeight]="wrapperHeight"
+    [readOnly]="!!editorService.config().readOnly"
+    (presetSelected)="handlePresetSelected($event)"
+    (widthInput)="handleWidthInput($event)"
+    (heightInput)="handleHeightInput($event)"
+    (deleteSelected)="handleDeleteSelectedImage()"
+    (resizeStarted)="handleResizeStarted($event)">
+  </app-editor-image-resizer>
   }
 
-  <!-- Image Resizer Drag Wrapper -->
-  @if (selectedImageEl) {
-  <div class="image-resize-wrapper" [style.top.px]="wrapperTop" [style.left.px]="wrapperLeft"
-    [style.width.px]="wrapperWidth" [style.height.px]="wrapperHeight">
-    <div class="resize-point top-left" (mousedown)="startResize($event, 'top-left')"></div>
-
-    <div class="resize-point top-right" (mousedown)="startResize($event, 'top-right')"></div>
-
-    <div class="resize-point bottom-left" (mousedown)="startResize($event, 'bottom-left')"></div>
-
-    <div class="resize-point bottom-right" (mousedown)="startResize($event, 'bottom-right')"></div>
-  </div>
-  }
-
-  <div class="editor-footer">
-    <div class="editor-status">
-      @if (editorService.config().readOnly) {
-      <span class="status-badge readonly-badge">Read Only</span>
-      } @else if (editorService.isLimitReached()) {
-      <span class="status-badge warning-badge">Character Limit Reached</span>
-      }
-    </div>
-
-    <div style="display: flex; align-items: center;">
-      @if (editorService.config().maxLength !== undefined) {
-      <div class="character-count" [class.danger]="editorService.isLimitReached()">
-        {{ editorService.charCount() }} / {{ editorService.config().maxLength }}
-        @if (editorService.remainingChars() !== null) {
-        <span class="remaining-text">({{ editorService.remainingChars() }} left)</span>
-        }
-      </div>
-      }
-      @if (!editorService.config().readOnly) {
-      <div class="editor-resize-handle" 
-           title="Drag to resize editor"
-           (mousedown)="startEditorResize($event)">
-        <svg viewBox="0 0 24 24" width="14" height="14">
-          <line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="4" y1="15" x2="20" y2="15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      }
-    </div>
-  </div>
+  <!-- Editor Footer -->
+  <app-editor-footer
+    [charCount]="editorService.charCount()"
+    [maxLength]="editorService.config().maxLength"
+    [readOnly]="!!editorService.config().readOnly"
+    [isLimitReached]="editorService.isLimitReached()"
+    [remainingChars]="editorService.remainingChars()"
+    (resizeEditorStarted)="startEditorResize($event)">
+  </app-editor-footer>
 </div>

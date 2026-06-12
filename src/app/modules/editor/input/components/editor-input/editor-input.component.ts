@@ -15,7 +15,9 @@ import { EditorInputService } from './services/editor-input.service';
 import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.types';
 import Quill from 'quill';
 
-import { TooltipComponent } from '../tooltip';
+import { EditorToolbarComponent } from './components/editor-toolbar';
+import { EditorImageResizerComponent } from './components/editor-image-resizer';
+import { EditorFooterComponent } from './components/editor-footer';
 
 // Override default block format to 'div' instead of 'p' to align perfectly with service expectations and tests
 const Block = Quill.import('blots/block') as any;
@@ -54,7 +56,12 @@ Quill.register(CustomImageBlot, true);
 @Component({
   selector: 'app-editor-input',
   standalone: true,
-  imports: [FormsModule, TooltipComponent],
+  imports: [
+    FormsModule,
+    EditorToolbarComponent,
+    EditorImageResizerComponent,
+    EditorFooterComponent
+  ],
   templateUrl: './editor-input.component.html',
   styleUrl: './editor-input.component.scss',
   providers: [
@@ -91,16 +98,13 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   private quill?: Quill;
   private pendingValue: any = null;
 
-  isColorPickerOpen = false;
-  isImageMenuOpen = false;
-  isLinkMenuOpen = false;
-  linkUrlInput = '';
-  linkTextInput = '';
+  // Selection states passed to Toolbar
+  selectionText = '';
+  existingLinkUrl = '';
   hasSelectionForLink = false;
-  hasExistingLink = false;
   private savedSelectionRange: { index: number; length: number } | null = null;
-  imageMenuMode: 'select' | 'url' = 'select';
-  imageUrlInput = '';
+
+  // Image resize states passed to Resizer
   selectedImageEl: HTMLImageElement | null = null;
   bubbleTop = 0;
   bubbleLeft = 0;
@@ -115,15 +119,6 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   private resizeStartHeight = 0;
   private resizeRatio = 1;
   private resizeMaxWidth = 400;
-
-  highlightColors = [
-    { name: 'Yellow', value: '#fff3cd' },
-    { name: 'Green', value: '#d1e7dd' },
-    { name: 'Blue', value: '#cff4fc' },
-    { name: 'Red', value: '#f8d7da' },
-    { name: 'Orange', value: '#ffe5d9' },
-    { name: 'Purple', value: '#f3e5f5' }
-  ];
 
   // Form Control Value Accessor callbacks
   private onChange: (value: string | EditorObjectOutput) => void = () => { };
@@ -379,42 +374,16 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     this.onChange(this.editorService.outputValue());
   }
 
-  toggleColorPicker(): void {
-    if (this.readOnly()) return;
-    this.isColorPickerOpen = !this.isColorPickerOpen;
-  }
-
   selectHighlightColor(color: string | false): void {
     if (this.readOnly() || !this.quill) return;
     this.quill.focus();
     this.quill.format('background', color);
-    this.isColorPickerOpen = false;
   }
 
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.color-picker-container')) {
-      this.isColorPickerOpen = false;
-    }
-    if (!target.closest('.image-menu-container')) {
-      this.isImageMenuOpen = false;
-      this.imageMenuMode = 'select';
-      this.imageUrlInput = '';
-    }
-    if (!target.closest('.link-menu-container')) {
-      this.isLinkMenuOpen = false;
-      this.linkUrlInput = '';
-      this.linkTextInput = '';
-    }
     if (!target.closest('.image-resize-bubble') && target.tagName !== 'IMG') {
       this.clearImageSelection();
-    }
-  }
-
-  onDropdownMousedown(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-      event.preventDefault();
     }
   }
 
@@ -424,54 +393,19 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     }
   }
 
-  toggleImageMenu(): void {
-    if (this.readOnly()) return;
-    this.isImageMenuOpen = !this.isImageMenuOpen;
-    if (this.isImageMenuOpen) {
-      this.imageMenuMode = 'select';
-      this.imageUrlInput = '';
+  // Toolbar Handlers
+  handleFormat(event: { command: string; value?: string }): void {
+    if (event.command === 'background') {
+      this.selectHighlightColor(event.value || false);
+    } else {
+      this.formatDoc(event.command);
     }
   }
 
-  toggleLinkMenu(): void {
-    if (this.readOnly()) return;
-    this.isLinkMenuOpen = !this.isLinkMenuOpen;
-    if (this.isLinkMenuOpen) {
-      const range = this.quill?.getSelection();
-      this.savedSelectionRange = range || null;
-
-      let existingUrl = '';
-      if (range) {
-        const formats: any = this.quill!.getFormat(range);
-        existingUrl = formats['link'] || '';
-      } else if (this.quill) {
-        const formats: any = this.quill.getFormat();
-        existingUrl = formats['link'] || '';
-      }
-      this.hasExistingLink = !!existingUrl;
-
-      if (range && range.length > 0) {
-        this.hasSelectionForLink = true;
-        this.linkTextInput = this.quill!.getText(range.index, range.length);
-      } else {
-        this.hasSelectionForLink = false;
-        this.linkTextInput = '';
-      }
-      this.linkUrlInput = existingUrl;
-      // Focus the link URL input
-      setTimeout(() => {
-        const inputEl = this.elementRef.nativeElement.querySelector('.link-url-input');
-        if (inputEl) {
-          inputEl.focus();
-        }
-      });
-    }
-  }
-
-  insertLink(): void {
-    if (!this.quill || !this.linkUrlInput || !this.linkUrlInput.trim()) return;
-    const url = this.linkUrlInput.trim();
-    const text = this.linkTextInput.trim();
+  handleLinkInsert(event: { url: string; text: string }): void {
+    if (!this.quill || !event.url) return;
+    const url = event.url;
+    const text = event.text;
 
     this.quill.focus();
 
@@ -492,58 +426,94 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       this.quill.insertText(index, linkText, 'link', url);
       this.quill.setSelection(index + linkText.length);
     }
-
-    this.isLinkMenuOpen = false;
-    this.linkUrlInput = '';
-    this.linkTextInput = '';
-    this.hasExistingLink = false;
   }
 
-  removeLink(): void {
+  handleLinkRemove(): void {
     if (!this.quill) return;
-
     this.quill.focus();
-
     if (this.savedSelectionRange) {
       this.quill.setSelection(this.savedSelectionRange.index, this.savedSelectionRange.length);
       this.quill.format('link', false);
     } else {
       this.quill.format('link', false);
     }
-
-    this.isLinkMenuOpen = false;
-    this.linkUrlInput = '';
-    this.linkTextInput = '';
-    this.hasExistingLink = false;
   }
 
-  setImageMenuMode(mode: 'select' | 'url'): void {
-    this.imageMenuMode = mode;
-    if (mode === 'url') {
-      setTimeout(() => {
-        const inputEl = this.elementRef.nativeElement.querySelector('.image-url-input');
-        if (inputEl) {
-          inputEl.focus();
-        }
-      });
-    }
-  }
-
-  selectImageFromDisk(): void {
-    this.isImageMenuOpen = false;
-    this.triggerImageInput();
-  }
-
-  insertImageFromUrl(): void {
-    if (!this.imageUrlInput || !this.imageUrlInput.trim()) return;
-    const url = this.imageUrlInput.trim();
-    this.isImageMenuOpen = false;
-    this.imageUrlInput = '';
-
+  handleImageInsertUrl(url: string): void {
     const placeholderId = 'placeholder-' + Math.random().toString(36).substring(2, 9);
     const index = this.getInsertionIndex();
     this.insertPlaceholder(index, placeholderId);
     this.replacePlaceholderWithImage(placeholderId, url);
+  }
+
+  handleImageSelectDisk(): void {
+    this.triggerImageInput();
+  }
+
+  handleLinkMenuOpened(): void {
+    if (!this.quill) return;
+    const range = this.quill.getSelection();
+    this.savedSelectionRange = range || null;
+
+    let existingUrl = '';
+    if (range) {
+      const formats: any = this.quill.getFormat(range);
+      existingUrl = formats['link'] || '';
+    } else {
+      const formats: any = this.quill.getFormat();
+      existingUrl = formats['link'] || '';
+    }
+
+    this.existingLinkUrl = existingUrl;
+
+    if (range && range.length > 0) {
+      this.hasSelectionForLink = true;
+      this.selectionText = this.quill.getText(range.index, range.length);
+    } else {
+      this.hasSelectionForLink = false;
+      this.selectionText = '';
+    }
+  }
+
+  // Image Resizer Handlers
+  handlePresetSelected(scale: number): void {
+    this.resizeSelectedImage(scale);
+  }
+
+  handleWidthInput(width: number): void {
+    if (this.selectedImageEl && width > 0) {
+      const height = this.editorService.calculateHeightFromWidth(
+        width,
+        this.selectedImageEl.naturalWidth || 200,
+        this.selectedImageEl.naturalHeight || 150
+      );
+      this.selectedImageEl.setAttribute('width', width.toString());
+      this.selectedImageEl.setAttribute('height', height.toString());
+      this.quill!.update();
+      this.repositionBubble();
+    }
+  }
+
+  handleHeightInput(height: number): void {
+    if (this.selectedImageEl && height > 0) {
+      const width = this.editorService.calculateWidthFromHeight(
+        height,
+        this.selectedImageEl.naturalWidth || 200,
+        this.selectedImageEl.naturalHeight || 150
+      );
+      this.selectedImageEl.setAttribute('width', width.toString());
+      this.selectedImageEl.setAttribute('height', height.toString());
+      this.quill!.update();
+      this.repositionBubble();
+    }
+  }
+
+  handleDeleteSelectedImage(): void {
+    this.deleteSelectedImage();
+  }
+
+  handleResizeStarted(event: { event: MouseEvent; direction: string }): void {
+    this.startResize(event.event, event.direction);
   }
 
   triggerImageInput(): void {
@@ -773,38 +743,6 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   get selectedImageHeight(): number {
     if (!this.selectedImageEl) return 0;
     return parseInt(this.selectedImageEl.getAttribute('height') || '0', 10);
-  }
-
-  onWidthInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const width = parseInt(input.value, 10);
-    if (this.selectedImageEl && width > 0) {
-      const height = this.editorService.calculateHeightFromWidth(
-        width,
-        this.selectedImageEl.naturalWidth || 200,
-        this.selectedImageEl.naturalHeight || 150
-      );
-      this.selectedImageEl.setAttribute('width', width.toString());
-      this.selectedImageEl.setAttribute('height', height.toString());
-      this.quill!.update();
-      this.repositionBubble();
-    }
-  }
-
-  onHeightInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const height = parseInt(input.value, 10);
-    if (this.selectedImageEl && height > 0) {
-      const width = this.editorService.calculateWidthFromHeight(
-        height,
-        this.selectedImageEl.naturalWidth || 200,
-        this.selectedImageEl.naturalHeight || 150
-      );
-      this.selectedImageEl.setAttribute('width', width.toString());
-      this.selectedImageEl.setAttribute('height', height.toString());
-      this.quill!.update();
-      this.repositionBubble();
-    }
   }
 
   resizeSelectedImage(scale: number): void {

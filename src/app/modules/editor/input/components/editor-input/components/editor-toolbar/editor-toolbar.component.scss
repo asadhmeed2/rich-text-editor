@@ -1,0 +1,169 @@
+$primary-color: hsl(220, 90%, 56%);
+$primary-hover: hsl(220, 90%, 50%);
+$bg-color: hsl(210, 20%, 98%);
+$surface-color: hsl(0, 0%, 100%);
+$border-color: hsl(210, 14%, 89%);
+$border-focused: hsl(220, 90%, 56%);
+$text-color: hsl(210, 24%, 16%);
+$text-muted: hsl(210, 10%, 60%);
+$danger-color: hsl(0, 84%, 60%);
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 16px;
+  background-color: hsl(210, 20%, 98.5%);
+  border-bottom: 1px solid $border-color;
+  user-select: none;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.toolbar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: hsl(210, 24%, 30%);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background-color: rgba($primary-color, 0.08);
+    color: $primary-color;
+  }
+
+  &:active {
+    transform: scale(0.95);
+    background-color: rgba($primary-color, 0.15);
+  }
+
+  .material-icons {
+    font-size: 18px;
+  }
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background-color: $border-color;
+  margin: 0 6px;
+}
+
+.image-menu-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.image-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.link-menu-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.link-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  width: 240px;
+}
+
+.link-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.link-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: hsl(210, 24%, 30%);
+}
+
+.link-text-input,
+.link-url-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1px solid hsl(210, 14%, 89%);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: hsl(220, 90%, 56%);
+  }
+}
+
+.link-action-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.link-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &.cancel-btn {
+    background-color: transparent;
+    color: hsl(210, 10%, 60%);
+
+    &:hover {
+      background-color: rgba(210, 210, 210, 0.1);
+    }
+  }
+
+  &.remove-btn {
+    background-color: transparent;
+    color: $danger-color;
+
+    &:hover {
+      background-color: rgba($danger-color, 0.08);
+    }
+  }
+
+  &.confirm-btn {
+    background-color: hsl(220, 90%, 56%);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: hsl(220, 90%, 50%);
+    }
+
+    &:disabled {
+      background-color: rgba(54, 116, 230, 0.4);
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Show tooltip on hover, but not when button is active (dropdown open)
+.toolbar-btn:hover:not(.active) {
+  app-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(4px) scale(1);
+  }
+}
