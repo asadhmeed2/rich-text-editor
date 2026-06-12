@@ -4,6 +4,7 @@
   @if (!editorService.config().readOnly) {
   <app-editor-toolbar
     [readOnly]="!!editorService.config().readOnly"
+    [buttons]="editorService.config().toolbarButtons || []"
     [selectionText]="selectionText"
     [existingLinkUrl]="existingLinkUrl"
     (format)="handleFormat($event)"

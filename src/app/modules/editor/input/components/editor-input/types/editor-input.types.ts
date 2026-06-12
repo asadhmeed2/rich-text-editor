@@ -19,12 +19,15 @@ export interface EditorObjectOutput {
   images: Record<string, EditorImageInfo>;
 }
 
+export type EditorToolbarButton = 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'highlight' | 'bulletList' | 'orderedList' | 'link' | 'image' | 'imageDisk' | 'imageUrl' | 'clear';
+
 export interface EditorInputConfig {
   placeholder?: string;
   maxLength?: number;
   readOnly?: boolean;
   outputFormat?: EditorOutputFormat;
   imageUploadHandler?: (file: File) => Promise<string> | string;
+  toolbarButtons?: EditorToolbarButton[];
 }
 
 export interface EditorState {

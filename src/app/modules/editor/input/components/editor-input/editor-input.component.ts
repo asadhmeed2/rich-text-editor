@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 import { EditorInputService } from './services/editor-input.service';
-import { EditorOutputFormat, EditorObjectOutput } from './types/editor-input.types';
+import { EditorOutputFormat, EditorObjectOutput, EditorToolbarButton } from './types/editor-input.types';
 import Quill from 'quill';
 
 import { EditorToolbarComponent } from './components/editor-toolbar';
@@ -87,6 +87,9 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   readOnly = input<boolean>(false);
   outputFormat = input<EditorOutputFormat>('html');
   imageUploadHandler = input<((file: File) => Promise<string> | string) | undefined>(undefined);
+  toolbarButtons = input<EditorToolbarButton[]>([
+    'bold', 'italic', 'underline', 'strikeThrough', 'highlight', 'bulletList', 'orderedList', 'link', 'image', 'clear'
+  ]);
 
   // Signal-based outputs
   contentChange = output<string | EditorObjectOutput>();
@@ -135,7 +138,8 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         maxLength: this.maxLength(),
         readOnly: isReadOnly,
         outputFormat: this.outputFormat(),
-        imageUploadHandler: this.imageUploadHandler()
+        imageUploadHandler: this.imageUploadHandler(),
+        toolbarButtons: this.toolbarButtons()
       });
 
       if (this.quill) {
@@ -161,7 +165,8 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       maxLength: this.maxLength(),
       readOnly: this.readOnly(),
       outputFormat: this.outputFormat(),
-      imageUploadHandler: this.imageUploadHandler()
+      imageUploadHandler: this.imageUploadHandler(),
+      toolbarButtons: this.toolbarButtons()
     });
   }
 

@@ -3,10 +3,12 @@ import {
   input,
   output,
   ElementRef,
-  inject
+  inject,
+  computed
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TooltipComponent } from '../../../tooltip';
+import { EditorToolbarButton } from '../../types/editor-input.types';
 
 @Component({
   selector: 'app-editor-toolbar',
@@ -24,6 +26,7 @@ export class EditorToolbarComponent {
   readOnly = input<boolean>(false);
   selectionText = input<string>('');
   existingLinkUrl = input<string>('');
+  buttons = input<EditorToolbarButton[]>([]);
 
   // Outputs
   format = output<{ command: string; value?: string }>();
@@ -36,9 +39,12 @@ export class EditorToolbarComponent {
   isColorPickerOpen = false;
   isLinkMenuOpen = false;
   isImageMenuOpen = false;
+  isImageUrlOnlyOpen = false;
+  
   linkUrlInput = '';
   linkTextInput = '';
   imageUrlInput = '';
+  imageUrlOnlyInput = '';
   imageMenuMode: 'select' | 'url' = 'select';
 
   highlightColors = [
@@ -49,6 +55,37 @@ export class EditorToolbarComponent {
     { name: 'Orange', value: '#ffe5d9' },
     { name: 'Purple', value: '#f3e5f5' }
   ];
+
+  activeButtons = computed(() => new Set(this.buttons()));
+
+  hasButton(name: EditorToolbarButton): boolean {
+    return this.activeButtons().has(name);
+  }
+
+  // Computed properties for separator logic
+  hasInlineGroup = computed(() => {
+    const active = this.activeButtons();
+    return active.has('bold') || active.has('italic') || active.has('underline') || active.has('strikeThrough') || active.has('highlight');
+  });
+
+  hasListGroup = computed(() => {
+    const active = this.activeButtons();
+    return active.has('bulletList') || active.has('orderedList');
+  });
+
+  hasInsertGroup = computed(() => {
+    const active = this.activeButtons();
+    return active.has('link') || active.has('image') || active.has('imageDisk') || active.has('imageUrl');
+  });
+
+  hasClearGroup = computed(() => {
+    const active = this.activeButtons();
+    return active.has('clear');
+  });
+
+  showSeparator1 = computed(() => this.hasInlineGroup() && (this.hasListGroup() || this.hasInsertGroup() || this.hasClearGroup()));
+  showSeparator2 = computed(() => (this.hasInlineGroup() || this.hasListGroup()) && (this.hasInsertGroup() || this.hasClearGroup()));
+  showSeparator3 = computed(() => (this.hasInlineGroup() || this.hasListGroup() || this.hasInsertGroup()) && this.hasClearGroup());
 
   formatDoc(command: string): void {
     if (this.readOnly()) return;
@@ -111,6 +148,20 @@ export class EditorToolbarComponent {
     }
   }
 
+  toggleImageUrlOnly(): void {
+    if (this.readOnly()) return;
+    this.isImageUrlOnlyOpen = !this.isImageUrlOnlyOpen;
+    if (this.isImageUrlOnlyOpen) {
+      this.imageUrlOnlyInput = '';
+      setTimeout(() => {
+        const inputEl = this.elementRef.nativeElement.querySelector('.image-url-only-input');
+        if (inputEl) {
+          inputEl.focus();
+        }
+      });
+    }
+  }
+
   setImageMenuMode(mode: 'select' | 'url'): void {
     this.imageMenuMode = mode;
     if (mode === 'url') {
@@ -135,6 +186,13 @@ export class EditorToolbarComponent {
     this.imageUrlInput = '';
   }
 
+  insertImageFromUrlOnly(): void {
+    if (!this.imageUrlOnlyInput || !this.imageUrlOnlyInput.trim()) return;
+    this.imageInsertUrl.emit(this.imageUrlOnlyInput.trim());
+    this.isImageUrlOnlyOpen = false;
+    this.imageUrlOnlyInput = '';
+  }
+
   onDropdownMousedown(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
@@ -151,6 +209,8 @@ export class EditorToolbarComponent {
       this.isImageMenuOpen = false;
       this.imageMenuMode = 'select';
       this.imageUrlInput = '';
+      this.isImageUrlOnlyOpen = false;
+      this.imageUrlOnlyInput = '';
     }
     if (!target.closest('.link-menu-container')) {
       this.isLinkMenuOpen = false;

@@ -17,7 +17,8 @@ export class EditorInputService {
     placeholder: 'Type your content here...',
     maxLength: 1000,
     readOnly: false,
-    outputFormat: 'html'
+    outputFormat: 'html',
+    toolbarButtons: ['bold', 'italic', 'underline', 'strikeThrough', 'highlight', 'bulletList', 'orderedList', 'link', 'image', 'clear']
   });
 
   // State signal

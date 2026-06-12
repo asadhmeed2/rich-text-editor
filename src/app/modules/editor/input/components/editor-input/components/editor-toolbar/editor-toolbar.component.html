@@ -1,29 +1,38 @@
 <div class="editor-toolbar">
   <!-- Bold -->
+  @if (hasButton('bold')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('bold')">
     <span class="material-icons">format_bold</span>
     <app-tooltip title="Bold" desc="Format selected text as bold (Ctrl+B)"></app-tooltip>
   </button>
+  }
 
   <!-- Italic -->
+  @if (hasButton('italic')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('italic')">
     <span class="material-icons">format_italic</span>
     <app-tooltip title="Italic" desc="Format selected text as italic (Ctrl+I)"></app-tooltip>
   </button>
+  }
 
   <!-- Underline -->
+  @if (hasButton('underline')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('underline')">
     <span class="material-icons">format_underlined</span>
     <app-tooltip title="Underline" desc="Underline selected text (Ctrl+U)"></app-tooltip>
   </button>
+  }
 
   <!-- Strikethrough -->
+  @if (hasButton('strikeThrough')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('strikeThrough')">
     <span class="material-icons">format_strikethrough</span>
     <app-tooltip title="Strikethrough" desc="Strike through selected text"></app-tooltip>
   </button>
+  }
 
   <!-- Highlight Background Color -->
+  @if (hasButton('highlight')) {
   <div class="color-picker-container">
     <button class="toolbar-btn" [class.active]="isColorPickerOpen"
       (mousedown)="$event.preventDefault(); toggleColorPicker()">
@@ -47,22 +56,34 @@
     </div>
     }
   </div>
+  }
 
+  @if (showSeparator1()) {
   <div class="toolbar-separator"></div>
+  }
 
   <!-- Unordered List -->
+  @if (hasButton('bulletList')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('insertUnorderedList')">
     <span class="material-icons">format_list_bulleted</span>
     <app-tooltip title="Bullet List" desc="Insert a bulleted list"></app-tooltip>
   </button>
+  }
 
   <!-- Ordered List -->
+  @if (hasButton('orderedList')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('insertOrderedList')">
     <span class="material-icons">format_list_numbered</span>
     <app-tooltip title="Numbered List" desc="Insert a numbered list"></app-tooltip>
   </button>
+  }
+
+  @if (showSeparator2()) {
+  <div class="toolbar-separator"></div>
+  }
 
   <!-- Insert Link Menu -->
+  @if (hasButton('link')) {
   <div class="link-menu-container">
     <button class="toolbar-btn" [class.active]="isLinkMenuOpen"
       (mousedown)="$event.preventDefault(); toggleLinkMenu()">
@@ -92,8 +113,10 @@
     </div>
     }
   </div>
+  }
 
-  <!-- Insert Image Menu -->
+  <!-- Insert Image Menu (Unified dropdown) -->
+  @if (hasButton('image')) {
   <div class="image-menu-container">
     <button class="toolbar-btn" [class.active]="isImageMenuOpen"
       (mousedown)="$event.preventDefault(); toggleImageMenu()">
@@ -126,12 +149,50 @@
     </div>
     }
   </div>
+  }
 
+  <!-- Direct Image from Disk Upload -->
+  @if (hasButton('imageDisk')) {
+  <button class="toolbar-btn" (mousedown)="$event.preventDefault(); selectImageFromDisk()">
+    <span class="material-icons">add_photo_alternate</span>
+    <app-tooltip title="Upload Image" desc="Insert image from disk"></app-tooltip>
+  </button>
+  }
+
+  <!-- Direct Image from URL Insertion -->
+  @if (hasButton('imageUrl')) {
+  <div class="image-menu-container">
+    <button class="toolbar-btn" [class.active]="isImageUrlOnlyOpen"
+      (mousedown)="$event.preventDefault(); toggleImageUrlOnly()">
+      <span class="material-icons">image</span>
+      <app-tooltip title="Image URL" desc="Insert image from URL"></app-tooltip>
+    </button>
+
+    @if (isImageUrlOnlyOpen) {
+    <div class="editor-dropdown image-dropdown" (mousedown)="onDropdownMousedown($event)">
+      <div class="url-input-container">
+        <input type="text" class="image-url-only-input image-url-input" placeholder="Enter image URL..." [(ngModel)]="imageUrlOnlyInput"
+          (keydown.enter)="insertImageFromUrlOnly()" (keydown.escape)="isImageUrlOnlyOpen = false">
+        <div class="url-action-btns">
+          <button class="url-btn cancel-btn" (click)="isImageUrlOnlyOpen = false">Cancel</button>
+          <button class="url-btn confirm-btn" (click)="insertImageFromUrlOnly()"
+            [disabled]="!imageUrlOnlyInput.trim()">Insert</button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  @if (showSeparator3()) {
   <div class="toolbar-separator"></div>
+  }
 
   <!-- Clear Formatting -->
+  @if (hasButton('clear')) {
   <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('removeFormat')">
     <span class="material-icons">format_clear</span>
     <app-tooltip title="Clear Formatting" desc="Clear all styling from selection"></app-tooltip>
   </button>
+  }
 </div>
