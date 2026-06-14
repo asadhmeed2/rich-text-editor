@@ -78,6 +78,14 @@
   </button>
   }
 
+  <!-- Code Block -->
+  @if (hasButton('codeBlock')) {
+  <button class="toolbar-btn" (mousedown)="$event.preventDefault(); formatDoc('codeBlock')">
+    <span class="material-icons">code</span>
+    <app-tooltip title="Code Block" desc="Insert a code block"></app-tooltip>
+  </button>
+  }
+
   @if (showSeparator2()) {
   <div class="toolbar-separator"></div>
   }

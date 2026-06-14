@@ -88,7 +88,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   outputFormat = input<EditorOutputFormat>('html');
   imageUploadHandler = input<((file: File) => Promise<string> | string) | undefined>(undefined);
   toolbarButtons = input<EditorToolbarButton[]>([
-    'bold', 'italic', 'underline', 'strikeThrough', 'highlight', 'bulletList', 'orderedList', 'link', 'image', 'clear'
+    'bold', 'italic', 'underline', 'strikeThrough', 'highlight', 'bulletList', 'orderedList', 'link', 'image', 'codeBlock', 'clear'
   ]);
 
   // Signal-based outputs
@@ -339,6 +339,9 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         } else {
           this.quill.format('list', 'ordered');
         }
+        break;
+      case 'codeBlock':
+        this.quill.format('code-block', !currentFormat['code-block']);
         break;
       case 'removeFormat':
         const range = this.quill.getSelection();

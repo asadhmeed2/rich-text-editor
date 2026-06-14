@@ -18,7 +18,7 @@ export class EditorInputService {
     maxLength: 1000,
     readOnly: false,
     outputFormat: 'html',
-    toolbarButtons: ['bold', 'italic', 'underline', 'strikeThrough', 'highlight', 'bulletList', 'orderedList', 'link', 'image', 'clear']
+    toolbarButtons: ['bold', 'italic', 'underline', 'strikeThrough', 'highlight', 'bulletList', 'orderedList', 'link', 'image', 'codeBlock', 'clear']
   });
 
   // State signal

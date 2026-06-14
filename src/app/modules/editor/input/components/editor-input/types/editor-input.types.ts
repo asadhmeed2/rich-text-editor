@@ -19,7 +19,7 @@ export interface EditorObjectOutput {
   images: Record<string, EditorImageInfo>;
 }
 
-export type EditorToolbarButton = 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'highlight' | 'bulletList' | 'orderedList' | 'link' | 'image' | 'imageDisk' | 'imageUrl' | 'clear';
+export type EditorToolbarButton = 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'highlight' | 'bulletList' | 'orderedList' | 'link' | 'image' | 'imageDisk' | 'imageUrl' | 'codeBlock' | 'clear';
 
 export interface EditorInputConfig {
   placeholder?: string;

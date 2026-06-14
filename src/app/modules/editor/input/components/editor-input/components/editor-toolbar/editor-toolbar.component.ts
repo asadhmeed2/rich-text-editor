@@ -70,7 +70,7 @@ export class EditorToolbarComponent {
 
   hasListGroup = computed(() => {
     const active = this.activeButtons();
-    return active.has('bulletList') || active.has('orderedList');
+    return active.has('bulletList') || active.has('orderedList') || active.has('codeBlock');
   });
 
   hasInsertGroup = computed(() => {
