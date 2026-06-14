@@ -79,7 +79,7 @@ $readonly-bg: hsl(210, 14%, 96%);
         display: block;
       }
 
-      pre.ql-syntax {
+      pre.custom-code-block {
         background-color: hsl(210, 15%, 12%) !important;
         color: hsl(210, 25%, 90%) !important;
         font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
@@ -93,14 +93,14 @@ $readonly-bg: hsl(210, 14%, 96%);
         padding: 4px 16px !important;
         border-radius: 0 !important;
 
-        &:not(pre.ql-syntax + pre.ql-syntax) {
+        &:not(pre.custom-code-block + pre.custom-code-block) {
           margin-top: 12px !important;
           border-top-left-radius: 8px !important;
           border-top-right-radius: 8px !important;
           padding-top: 12px !important;
         }
 
-        &:not(:has(+ pre.ql-syntax)) {
+        &:not(:has(+ pre.custom-code-block)) {
           margin-bottom: 12px !important;
           border-bottom-left-radius: 8px !important;
           border-bottom-right-radius: 8px !important;

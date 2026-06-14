@@ -53,6 +53,13 @@ class CustomImageBlot extends ImageBlot {
 }
 Quill.register(CustomImageBlot, true);
 
+// Customize standard code block format to use custom-code-block class instead of ql-syntax
+const CodeBlock = Quill.import('formats/code-block') as any;
+class CustomCodeBlock extends CodeBlock {
+  static className = 'custom-code-block';
+}
+Quill.register(CustomCodeBlock, true);
+
 @Component({
   selector: 'app-editor-input',
   standalone: true,

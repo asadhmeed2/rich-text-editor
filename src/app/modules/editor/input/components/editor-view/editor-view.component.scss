@@ -26,7 +26,7 @@ $bg-color: hsl(210, 20%, 99%);
       display: block;
     }
 
-    pre.ql-syntax {
+    pre.custom-code-block {
       background-color: hsl(210, 15%, 12%);
       color: hsl(210, 25%, 90%);
       font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
@@ -40,14 +40,14 @@ $bg-color: hsl(210, 20%, 99%);
       padding: 4px 16px;
       border-radius: 0;
 
-      &:not(pre.ql-syntax + pre.ql-syntax) {
+      &:not(pre.custom-code-block + pre.custom-code-block) {
         margin-top: 12px;
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
         padding-top: 12px;
       }
 
-      &:not(:has(+ pre.ql-syntax)) {
+      &:not(:has(+ pre.custom-code-block)) {
         margin-bottom: 12px;
         border-bottom-left-radius: 8px;
         border-bottom-right-radius: 8px;
