@@ -76,9 +76,23 @@ class CustomCodeBlock extends BlockEmbed {
     node.addEventListener('keydown', (e: KeyboardEvent) => {
       const targetCodeEl = node.querySelector('code');
       const text = targetCodeEl ? targetCodeEl.textContent || '' : '';
+      
       if ((e.key === 'Backspace' || e.key === 'Delete') && text === '') {
         return; // Bubble to Quill for deletion
       }
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.execCommand('insertText', false, '\n');
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        document.execCommand('insertText', false, '  ');
+        return;
+      }
+
       e.stopPropagation();
     });
 
