@@ -53,10 +53,42 @@ class CustomImageBlot extends ImageBlot {
 }
 Quill.register(CustomImageBlot, true);
 
-// Customize standard code block format to use custom-code-block class instead of ql-syntax
-const CodeBlock = Quill.import('formats/code-block') as any;
-class CustomCodeBlock extends CodeBlock {
+// Customize code block format as a BlockEmbed to avoid splitting line-by-line and use inline styling
+const BlockEmbed = Quill.import('blots/block/embed') as any;
+class CustomCodeBlock extends BlockEmbed {
+  static blotName = 'custom-code-block';
+  static tagName = 'pre';
   static className = 'custom-code-block';
+
+  static create(value: string) {
+    const node = super.create() as HTMLElement;
+    node.setAttribute('style', 'background-color: hsl(210, 15%, 12%); color: hsl(210, 25%, 90%); padding: 12px 16px; border-radius: 8px; font-family: \'Fira Code\', \'Consolas\', \'Courier New\', monospace; font-size: 14px; line-height: 1.5; margin: 12px 0; overflow-x: auto; white-space: pre-wrap; word-break: break-all; outline: none; border: none;');
+    node.setAttribute('contenteditable', 'true');
+    node.setAttribute('spellcheck', 'false');
+
+    const codeEl = document.createElement('code');
+    codeEl.setAttribute('contenteditable', 'true');
+    codeEl.setAttribute('style', 'font-family: inherit; color: inherit; background: transparent; border: none; padding: 0; margin: 0; outline: none; white-space: pre-wrap;');
+    codeEl.textContent = value || '';
+    node.appendChild(codeEl);
+
+    // Prevent enter and other default keys from bubbling up to Quill and splitting/deleting the block
+    node.addEventListener('keydown', (e: KeyboardEvent) => {
+      const targetCodeEl = node.querySelector('code');
+      const text = targetCodeEl ? targetCodeEl.textContent || '' : '';
+      if ((e.key === 'Backspace' || e.key === 'Delete') && text === '') {
+        return; // Bubble to Quill for deletion
+      }
+      e.stopPropagation();
+    });
+
+    return node;
+  }
+
+  static value(node: HTMLElement) {
+    const codeEl = node.querySelector('code');
+    return codeEl ? codeEl.textContent || '' : node.textContent || '';
+  }
 }
 Quill.register(CustomCodeBlock, true);
 
@@ -347,15 +379,36 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
           this.quill.format('list', 'ordered');
         }
         break;
-      case 'codeBlock':
-        this.quill.format('code-block', !currentFormat['code-block']);
+      case 'codeBlock': {
+        const range = this.quill.getSelection();
+        if (range) {
+          const [blot] = this.quill.getLine(range.index);
+          const isCode = blot && blot.constructor && (blot.constructor as any).blotName === 'custom-code-block';
+          if (isCode) {
+            const text = (blot as any).value();
+            const parentIndex = this.quill.getIndex(blot);
+            this.quill.deleteText(parentIndex, 1);
+            this.quill.insertText(parentIndex, text);
+            this.quill.setSelection(parentIndex, text.length);
+          } else {
+            const selectedText = this.quill.getText(range.index, range.length);
+            this.quill.deleteText(range.index, range.length);
+            this.quill.insertEmbed(range.index, 'custom-code-block', selectedText);
+            if (range.index + 1 >= this.quill.getLength()) {
+              this.quill.insertText(range.index + 1, '\n');
+            }
+            this.quill.setSelection(range.index + 1);
+          }
+        }
         break;
-      case 'removeFormat':
+      }
+      case 'removeFormat': {
         const range = this.quill.getSelection();
         if (range) {
           this.quill.removeFormat(range.index, range.length);
         }
         break;
+      }
       default:
         break;
     }
