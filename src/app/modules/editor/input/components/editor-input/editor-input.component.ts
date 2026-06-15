@@ -13,7 +13,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 import { EditorInputService } from './services/editor-input.service';
 import { EditorOutputFormat, EditorObjectOutput, EditorToolbarButton } from './types/editor-input.types';
-import Quill from 'quill';
+import Quill, { Parchment } from 'quill';
 
 import { EditorToolbarComponent } from './components/editor-toolbar';
 import { EditorImageResizerComponent } from './components/editor-image-resizer';
@@ -249,10 +249,10 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
 
         for (const codeBlock of codeBlocks) {
           const rect = codeBlock.getBoundingClientRect();
-          
+
           // Click before the code block
           if (clickY < rect.top) {
-            const blot = Quill.find(codeBlock) as any;
+            const blot = Quill.find(codeBlock) as Parchment.Blot;
             if (blot) {
               const index = this.quill!.getIndex(blot);
               if (index === 0) {
@@ -263,10 +263,10 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
               }
             }
           }
-          
+
           // Click after the code block
           if (clickY > rect.bottom) {
-            const blot = Quill.find(codeBlock) as any;
+            const blot = Quill.find(codeBlock) as Parchment.Blot;
             if (blot) {
               const index = this.quill!.getIndex(blot);
               const afterIndex = index + blot.length();
@@ -639,7 +639,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
   private insertPlaceholder(index: number, placeholderId: string): void {
     if (!this.quill) return;
     const loadingSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23f8f9fa" rx="12"/><circle cx="200" cy="150" r="24" fill="none" stroke="%233674e6" stroke-width="4" stroke-dasharray="100 50"><animateTransform attributeName="transform" type="rotate" from="0 200 150" to="360 200 150" dur="1s" repeatCount="indefinite"/></circle><text x="200" y="210" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" fill="%236c757d" text-anchor="middle" font-weight="500">Loading image...</text></svg>`;
-    
+
     this.quill.insertEmbed(index, 'image', {
       src: loadingSvg,
       width: '400',
@@ -708,22 +708,22 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
 
   repositionBubble(): void {
     if (!this.selectedImageEl) return;
-    
+
     const imgRect = this.selectedImageEl.getBoundingClientRect();
     const editorEl = this.elementRef.nativeElement.querySelector('.editor-container');
     if (!editorEl) return;
     const editorRect = editorEl.getBoundingClientRect();
-    
-    this.bubbleTop = imgRect.top - editorRect.top - 84; 
+
+    this.bubbleTop = imgRect.top - editorRect.top - 84;
     this.bubbleLeft = imgRect.left - editorRect.left + (imgRect.width / 2) - 125;
-    
+
     const toolbarEl = editorEl.querySelector('.editor-toolbar');
     const toolbarHeight = toolbarEl ? toolbarEl.clientHeight : 48;
-    
+
     if (this.bubbleTop < toolbarHeight + 4) {
       this.bubbleTop = imgRect.top - editorRect.top + 8;
     }
-    
+
     const maxLeft = editorRect.width - 258;
     if (this.bubbleLeft < 8) this.bubbleLeft = 8;
     if (this.bubbleLeft > maxLeft) this.bubbleLeft = maxLeft;
@@ -738,14 +738,14 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
     if (this.readOnly() || !this.selectedImageEl) return;
     event.preventDefault();
     event.stopPropagation();
-    
+
     this.isResizing = true;
     this.resizeStartMouseX = event.clientX;
     this.resizeStartMouseY = event.clientY;
     this.resizeStartWidth = this.selectedImageWidth;
     this.resizeStartHeight = this.selectedImageHeight;
     this.resizeRatio = (this.selectedImageEl.naturalWidth || 200) / (this.selectedImageEl.naturalHeight || 150);
-    
+
     const editorEl = this.editableArea()?.nativeElement;
     this.resizeMaxWidth = editorEl ? editorEl.clientWidth : 400;
 
@@ -753,10 +753,10 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       if (!this.selectedImageEl) return;
       const deltaX = moveEvent.clientX - this.resizeStartMouseX;
       const deltaY = moveEvent.clientY - this.resizeStartMouseY;
-      
+
       let newWidth = this.resizeStartWidth;
       let newHeight = this.resizeStartHeight;
-      
+
       switch (direction) {
         case 'middle-left':
           newWidth = this.resizeStartWidth - deltaX;
@@ -787,16 +787,16 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
           newHeight = this.resizeStartHeight + deltaY;
           break;
       }
-      
+
       // Enforce limits
       if (newWidth < 30) newWidth = 30;
       if (newWidth > this.resizeMaxWidth) newWidth = this.resizeMaxWidth;
-      
+
       if (newHeight < 30) newHeight = 30;
-      
+
       this.selectedImageEl.setAttribute('width', Math.round(newWidth).toString());
       this.selectedImageEl.setAttribute('height', Math.round(newHeight).toString());
-      
+
       this.repositionBubble();
     };
 
@@ -825,19 +825,19 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
 
   resizeSelectedImage(scale: number): void {
     if (!this.selectedImageEl) return;
-    
+
     const editorEl = this.editableArea()?.nativeElement;
     if (!editorEl) return;
-    
+
     const editorWidth = editorEl.clientWidth || 400;
-    
+
     const { width: targetWidth, height: targetHeight } = this.editorService.calculateScaledDimensions(
       scale,
       this.selectedImageEl.naturalWidth || 200,
       this.selectedImageEl.naturalHeight || 150,
       editorWidth
     );
-    
+
     this.selectedImageEl.setAttribute('width', targetWidth.toString());
     this.selectedImageEl.setAttribute('height', targetHeight.toString());
     this.quill!.update();
