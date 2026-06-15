@@ -257,6 +257,15 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
               const index = this.quill!.getIndex(blot);
               if (index === 0) {
                 this.quill!.insertText(0, '\n');
+                this.quill!.formatLine(0, 1, {
+                  'code-block': false,
+                  'list': false,
+                  'bold': false,
+                  'italic': false,
+                  'underline': false,
+                  'strike': false,
+                  'background': false
+                });
                 this.quill!.setSelection(0);
                 event.preventDefault();
                 break;
@@ -272,6 +281,15 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
               const afterIndex = index + blot.length();
               if (afterIndex >= this.quill!.getLength() - 1) {
                 this.quill!.insertText(afterIndex, '\n');
+                this.quill!.formatLine(afterIndex, 1, {
+                  'code-block': false,
+                  'list': false,
+                  'bold': false,
+                  'italic': false,
+                  'underline': false,
+                  'strike': false,
+                  'background': false
+                });
                 this.quill!.setSelection(afterIndex);
                 event.preventDefault();
                 break;
@@ -286,6 +304,15 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         const target = event.target as HTMLElement;
         if (target === this.quill!.root) {
           this.quill!.insertText(0, '\n');
+          this.quill!.formatLine(0, 1, {
+            'code-block': false,
+            'list': false,
+            'bold': false,
+            'italic': false,
+            'underline': false,
+            'strike': false,
+            'background': false
+          });
           this.quill!.setSelection(0);
           event.preventDefault();
         }
