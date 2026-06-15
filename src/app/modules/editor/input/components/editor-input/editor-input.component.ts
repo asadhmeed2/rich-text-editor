@@ -281,6 +281,16 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         }
       });
 
+      // Listen to double-clicks on the empty editor space to prepend an empty line at the start
+      this.quill.root.addEventListener('dblclick', (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (target === this.quill!.root) {
+          this.quill!.insertText(0, '\n');
+          this.quill!.setSelection(0);
+          event.preventDefault();
+        }
+      });
+
       // Listen to scroll events in the editor root to update bubble position
       this.quill.root.addEventListener('scroll', () => {
         if (this.selectedImageEl) {
