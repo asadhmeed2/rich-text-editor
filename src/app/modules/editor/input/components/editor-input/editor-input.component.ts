@@ -235,6 +235,52 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         }
       });
 
+      // Listen to clicks in the empty editor space to insert a new line before/after code blocks
+      this.quill.root.addEventListener('click', (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (target !== this.quill!.root) {
+          return;
+        }
+
+        const codeBlocks = Array.from(this.quill!.root.querySelectorAll('pre.custom-code-block')) as HTMLElement[];
+        if (codeBlocks.length === 0) return;
+
+        const clickY = event.clientY;
+
+        for (const codeBlock of codeBlocks) {
+          const rect = codeBlock.getBoundingClientRect();
+          
+          // Click before the code block
+          if (clickY < rect.top) {
+            const blot = Quill.find(codeBlock) as any;
+            if (blot) {
+              const index = this.quill!.getIndex(blot);
+              if (index === 0) {
+                this.quill!.insertText(0, '\n');
+                this.quill!.setSelection(0);
+                event.preventDefault();
+                break;
+              }
+            }
+          }
+          
+          // Click after the code block
+          if (clickY > rect.bottom) {
+            const blot = Quill.find(codeBlock) as any;
+            if (blot) {
+              const index = this.quill!.getIndex(blot);
+              const afterIndex = index + blot.length();
+              if (afterIndex >= this.quill!.getLength() - 1) {
+                this.quill!.insertText(afterIndex, '\n');
+                this.quill!.setSelection(afterIndex);
+                event.preventDefault();
+                break;
+              }
+            }
+          }
+        }
+      });
+
       // Listen to scroll events in the editor root to update bubble position
       this.quill.root.addEventListener('scroll', () => {
         if (this.selectedImageEl) {
