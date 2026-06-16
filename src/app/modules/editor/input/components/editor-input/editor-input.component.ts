@@ -196,6 +196,26 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
         readOnly: this.readOnly()
       });
 
+      // Add keyboard binding to delete code block format when backspace is pressed on an empty code block
+      this.quill.keyboard.addBinding({
+        key: 'Backspace',
+        collapsed: true,
+        empty: true,
+        format: ['code-block']
+      }, (range: any, context: any) => {
+        this.quill!.formatLine(range.index, 1, {
+          'code-block': false,
+          'list': false,
+          'bold': false,
+          'italic': false,
+          'underline': false,
+          'strike': false,
+          'background': false
+        });
+        return false;
+      });
+
+
       // Handle text-change events
       this.quill.on('text-change', () => {
         const text = this.quill!.getText().replace(/\n$/, '');
