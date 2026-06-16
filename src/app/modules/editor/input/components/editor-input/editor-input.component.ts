@@ -199,20 +199,27 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
       // Add keyboard binding to delete code block format when backspace is pressed on an empty code block
       this.quill.keyboard.addBinding({
         key: 'Backspace',
-        collapsed: true,
-        empty: true,
-        format: ['code-block']
+        collapsed: true
       }, (range: any, context: any) => {
-        this.quill!.formatLine(range.index, 1, {
-          'code-block': false,
-          'list': false,
-          'bold': false,
-          'italic': false,
-          'underline': false,
-          'strike': false,
-          'background': false
-        });
-        return false;
+        const [line, offset] = this.quill!.getLine(range.index);
+        if (line && line.statics.blotName === 'code-block') {
+          const lineIndex = this.quill!.getIndex(line);
+          const lineLength = line.length();
+          const lineText = this.quill!.getText(lineIndex, lineLength - 1);
+          if (lineText.trim() === '') {
+            this.quill!.formatLine(lineIndex, lineLength, {
+              'code-block': false,
+              'list': false,
+              'bold': false,
+              'italic': false,
+              'underline': false,
+              'strike': false,
+              'background': false
+            });
+            return false;
+          }
+        }
+        return true;
       });
 
 
