@@ -60,7 +60,7 @@ class CustomCodeBlock extends Block {
 
   static create(value: any) {
     const node = super.create(value) as HTMLElement;
-    node.setAttribute('style', 'background-color: hsl(210, 15%, 12%); color: hsl(210, 25%, 90%); font-family: \'Fira Code\', \'Consolas\', \'Courier New\', monospace; font-size: 14px; line-height: 1.5; margin: 0; padding: 4px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-all;');
+    node.setAttribute('style', 'background-color: hsl(208, 12%, 75%); color: hsl(210, 25%, 90%); font-family: \'Fira Code\', \'Consolas\', \'Courier New\', monospace; font-size: 14px; line-height: 1.5; margin: 0; padding: 4px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; border-radius: 0;');
     return node;
   }
 }
