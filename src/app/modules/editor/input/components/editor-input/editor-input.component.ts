@@ -303,24 +303,21 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
           // Click after the code block
           if (clickY > rect.bottom) {
             const blot = Quill.find(codeBlock) as Parchment.Blot;
-            if (blot) {
-              const index = this.quill!.getIndex(blot);
-              const afterIndex = index + blot.length();
-              if (afterIndex >= this.quill!.getLength() - 1) {
-                this.quill!.insertText(afterIndex, '\n');
-                this.quill!.formatLine(afterIndex, 1, {
-                  'code-block': false,
-                  'list': false,
-                  'bold': false,
-                  'italic': false,
-                  'underline': false,
-                  'strike': false,
-                  'background': false
-                });
-                this.quill!.setSelection(afterIndex);
-                event.preventDefault();
-                break;
-              }
+            if (blot && blot.next === null) {
+              const insertIndex = this.quill!.getLength() - 1;
+              this.quill!.insertText(insertIndex, '\n');
+              this.quill!.formatLine(insertIndex, 1, {
+                'code-block': false,
+                'list': false,
+                'bold': false,
+                'italic': false,
+                'underline': false,
+                'strike': false,
+                'background': false
+              });
+              this.quill!.setSelection(insertIndex);
+              event.preventDefault();
+              break;
             }
           }
         }
