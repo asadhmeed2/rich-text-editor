@@ -12,9 +12,3 @@
 - **Styling**: Use `.scss` for styling, ensuring that styles are modular, reusable, and cleanly organized.
 - **Prompt Refinement**: Always use the `improve-prompt.prompt.md` workflow for refining prompts.
 
-## Testing instructions
-- 
-
-## PR instructions
-- Title format: [<project_name>] <Title>
-- Always run `npm lint` and `npm test` before committing.
