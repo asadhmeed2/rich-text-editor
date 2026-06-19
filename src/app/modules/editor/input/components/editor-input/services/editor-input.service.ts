@@ -40,6 +40,15 @@ export class EditorInputService {
 
   // Helper to parse HTML, extract tags and positions, and produce plain text
   parseHtml(html: string): EditorObjectOutput {
+    // Sanitize the HTML by removing structural newlines between block-level tags.
+    // This prevents structural/formatting newlines inside elements like <pre> from being parsed as text content.
+    const blockTags = 'p|div|h[1-6]|pre|blockquote|ol|ul|li|table|tr|td|th|thead|tbody|tfoot';
+    const regex = new RegExp(`(<(?:${blockTags})\\b[^>]*>|<\\/(?:${blockTags})>)\\s*\\r?\\n\\s*(<(?:${blockTags})\\b[^>]*>|<\\/(?:${blockTags})>)`, 'gi');
+    let sanitizedHtml = html;
+    while (regex.test(sanitizedHtml)) {
+      sanitizedHtml = sanitizedHtml.replace(regex, '$1$2');
+    }
+
     let plainText = "";
     const tags: HtmlTagInfo[] = [];
     const images: Record<string, EditorImageInfo> = {};
@@ -54,17 +63,15 @@ export class EditorInputService {
       '&#39;': "'"
     };
 
-
-
-    while (i < html.length) {
-      if (html[i] === '<') {
-        const closeIdx = html.indexOf('>', i);
+    while (i < sanitizedHtml.length) {
+      if (sanitizedHtml[i] === '<') {
+        const closeIdx = sanitizedHtml.indexOf('>', i);
         const isTag = closeIdx !== -1 &&
-          !html.substring(i + 1, closeIdx).includes('<') &&
-          /^(?:[a-zA-Z!]|\/[a-zA-Z])/.test(html.substring(i + 1, closeIdx + 1));
+          !sanitizedHtml.substring(i + 1, closeIdx).includes('<') &&
+          /^(?:[a-zA-Z!]|\/[a-zA-Z])/.test(sanitizedHtml.substring(i + 1, closeIdx + 1));
 
         if (isTag) {
-          let tagContent = html.substring(i + 1, closeIdx);
+          let tagContent = sanitizedHtml.substring(i + 1, closeIdx);
 
           // Check if it's an <img> tag
           const lowercaseTag = tagContent.trim().toLowerCase();
@@ -101,14 +108,14 @@ export class EditorInputService {
           plainText += '<';
           i++;
         }
-      } else if (html[i] === '&') {
+      } else if (sanitizedHtml[i] === '&') {
         let entity = "&";
         let j = i + 1;
-        while (j < html.length && html[j] !== ';' && j - i < 10) {
-          entity += html[j];
+        while (j < sanitizedHtml.length && sanitizedHtml[j] !== ';' && j - i < 10) {
+          entity += sanitizedHtml[j];
           j++;
         }
-        if (j < html.length && html[j] === ';') {
+        if (j < sanitizedHtml.length && sanitizedHtml[j] === ';') {
           entity += ';';
           const decoded = entityMap[entity] || ' ';
           plainText += decoded;
@@ -118,7 +125,7 @@ export class EditorInputService {
           i++;
         }
       } else {
-        plainText += html[i];
+        plainText += sanitizedHtml[i];
         i++;
       }
     }
@@ -126,7 +133,7 @@ export class EditorInputService {
     return {
       plainText,
       html: {
-        content: html,
+        content: sanitizedHtml,
         tags
       },
       images

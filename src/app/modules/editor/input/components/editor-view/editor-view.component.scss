@@ -9,20 +9,9 @@ $bg-color: hsl(210, 20%, 99%);
   border: 1px dashed $border-color;
   border-radius: 12px;
   background-color: $bg-color;
-  color: $text-color;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
+
+
 
   // Style dynamic nested items
-  ::ng-deep {
-    // Format list layout
-    ul,
-    ol {
-      padding-left: 24px;
-      margin: 8px 0;
-    }
-  }
+
 }
