@@ -53,17 +53,28 @@ class CustomImageBlot extends ImageBlot {
 }
 Quill.register(CustomImageBlot, true);
 
-class CustomCodeBlock extends Block {
-  static blotName = 'code-block';
+const CodeBlock = Quill.import('formats/code-block') as any;
+const CodeBlockContainer = Quill.import('formats/code-block-container') as any;
+
+class CustomCodeBlockContainer extends CodeBlockContainer {
+  static blotName = 'code-block-container';
   static tagName = 'pre';
   static className = 'custom-code-block';
 
   static create(value: any) {
     const node = super.create(value) as HTMLElement;
-    node.setAttribute('style', 'background-color: hsl(208, 12%, 75%); color: hsl(210, 25%, 90%); font-family: \'Fira Code\', \'Consolas\', \'Courier New\', monospace; font-size: 14px; line-height: 1.5; margin: 0; padding: 4px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; border-radius: 0;');
+    node.setAttribute('style', 'background-color: hsl(208, 12%, 75%); color: hsl(210, 25%, 90%); font-family: \'Fira Code\', \'Consolas\', \'Courier New\', monospace; font-size: 14px; line-height: 1.5; margin: 12px 0; padding: 12px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; border-radius: 8px;');
     return node;
   }
 }
+
+class CustomCodeBlock extends CodeBlock {
+  static blotName = 'code-block';
+  static tagName = 'div';
+  static className = 'custom-code-block-line';
+}
+
+Quill.register(CustomCodeBlockContainer, true);
 Quill.register(CustomCodeBlock, true);
 
 @Component({
@@ -306,7 +317,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
             if (blot && blot.next === null) {
               const insertIndex = this.quill!.getLength() - 1;
               this.quill!.insertText(insertIndex, '\n');
-              this.quill!.formatLine(insertIndex, 1, {
+              this.quill!.formatLine(insertIndex + 1, 1, {
                 'code-block': false,
                 'list': false,
                 'bold': false,
@@ -315,7 +326,7 @@ export class EditorInputComponent implements OnInit, AfterViewInit, ControlValue
                 'strike': false,
                 'background': false
               });
-              this.quill!.setSelection(insertIndex);
+              this.quill!.setSelection(insertIndex + 1);
               event.preventDefault();
               break;
             }

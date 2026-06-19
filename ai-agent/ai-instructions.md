@@ -7,4 +7,4 @@
  - Do not use the integrated browser.
  - Do not auto push the changes to git.
  - Do not auto run the tests.
- 
+ - Do not create a walkthrough after implementing any changes unless explicitly asked.
