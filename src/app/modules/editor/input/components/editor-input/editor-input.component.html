@@ -18,7 +18,7 @@
   
   <input type="file" #imageInput style="display: none;" accept="image/*" (change)="onImageSelected($event)">
 
-  <div #editableArea class="editor-textarea"></div>
+  <div #editableArea class="editor-textarea" style="border: none; font-family: inherit; font-size: 15px; color: hsl(210, 24%, 16%);"></div>
 
   <!-- Image Resizer -->
   @if (selectedImageEl) {

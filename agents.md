@@ -9,6 +9,6 @@
 - **Signal-Based Architecture**: Build components using signal-based APIs (e.g., `input`, `output`, `computed`, `effect`,and `viewChild`).
 - **Type Safety**: Define and enforce TypeScript types/interfaces for all components and services.
 - **Modern Angular Control Flow**: Always use `@for`, `@if`, and `@switch` instead of legacy directives like `ngFor`, `ngIf`, and `ngSwitch`.
-- **Styling**: Use `.scss` for styling, ensuring that styles are modular, reusable, and cleanly organized.
+- **Styling**: for editor textarea html content use html inline styles (no need to add scss file), for the rest of the components use `.scss` for styling, ensuring that styles are modular, reusable, and cleanly organized.
 - **Prompt Refinement**: Always use the `improve-prompt.prompt.md` workflow for refining prompts.
 

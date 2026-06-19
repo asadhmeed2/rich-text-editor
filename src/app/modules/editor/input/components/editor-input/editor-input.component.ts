@@ -30,7 +30,8 @@ Quill.register(DivBlock, true);
 const ImageBlot = Quill.import('formats/image') as any;
 class CustomImageBlot extends ImageBlot {
   static create(value: any) {
-    const node = super.create(value);
+    const node = super.create(value) as HTMLElement;
+    node.setAttribute('style', 'max-width: 100%; height: auto; border-radius: 8px; margin: 8px 0; display: block;');
     if (typeof value === 'object' && value.src) {
       node.setAttribute('src', value.src);
       if (value.width) node.setAttribute('width', value.width.toString());
@@ -72,6 +73,12 @@ class CustomCodeBlock extends CodeBlock {
   static blotName = 'code-block';
   static tagName = 'div';
   static className = 'custom-code-block-line';
+
+  static create(value: any) {
+    const node = super.create(value) as HTMLElement;
+    node.setAttribute('style', 'min-height: 1.5em;');
+    return node;
+  }
 }
 
 Quill.register(CustomCodeBlockContainer, true);
